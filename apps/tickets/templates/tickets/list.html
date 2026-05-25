@@ -165,41 +165,39 @@
         }).catch(err => { btn.disabled = false; console.error(err); alert(err.message || 'Erro ao atualizar status'); });
     });
 
-    // assign self from list
-    document.querySelectorAll('.assign-self-btn').forEach(b => {
-        b.addEventListener('click', function(){
-            const url = b.dataset.url || b.getAttribute('data-url');
+    // Delegated: assign-self and close-request buttons
+    document.addEventListener('click', function(e){
+        // assign-self
+        const assignBtn = e.target.closest && e.target.closest('.assign-self-btn');
+        if(assignBtn){
+            e.preventDefault();
+            const url = assignBtn.dataset.url || assignBtn.getAttribute('data-url');
             if(!url) return;
             const csrftoken = getCookie('csrftoken');
             fetch(url, { method: 'POST', headers: {'X-CSRFToken': csrftoken, 'X-Requested-With':'XMLHttpRequest'}, credentials: 'same-origin' })
                 .then(r => r.json())
-                .then(json => {
-                    if(json.error){ alert(json.message || json.error); return; }
-                    window.location.reload();
-                }).catch(err => { console.error(err); alert('Erro ao atribuir a si mesmo'); });
-        });
-    });
-
-    // close requester-confirmed ticket (admin)
-    document.querySelectorAll('.close-request-btn').forEach(b => {
-        b.addEventListener('click', function(){
-            const url = b.dataset.url || b.getAttribute('data-url');
-            const status = b.dataset.status || 'CLOSED';
+                .then(json => { if(json.error){ alert(json.message || json.error); return; } window.location.reload(); })
+                .catch(err => { console.error(err); alert('Erro ao atribuir a si mesmo'); });
+            return;
+        }
+        // close-request
+        const closeBtn = e.target.closest && e.target.closest('.close-request-btn');
+        if(closeBtn){
+            e.preventDefault();
+            const url = closeBtn.dataset.url || closeBtn.getAttribute('data-url');
+            const status = closeBtn.dataset.status || 'CLOSED';
             if(!url) return;
             const csrftoken = getCookie('csrftoken');
             if(!confirm('Confirmar fechamento do chamado?')) return;
-            b.disabled = true;
+            closeBtn.disabled = true;
             fetch(url, {
                 method: 'POST',
                 headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
                 body: new URLSearchParams({ status: status }),
                 credentials: 'same-origin'
-            }).then(r => r.json()).then(json => {
-                b.disabled = false;
-                if(json.error){ alert(json.message || json.error); return; }
-                window.location.reload();
-            }).catch(err => { b.disabled = false; console.error(err); alert('Erro ao fechar chamado'); });
-        });
+            }).then(r => r.json()).then(json => { closeBtn.disabled = false; if(json.error){ alert(json.message || json.error); return; } window.location.reload(); }).catch(err => { closeBtn.disabled = false; console.error(err); alert('Erro ao fechar chamado'); });
+            return;
+        }
     });
 })();
 </script>
