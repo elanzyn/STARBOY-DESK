@@ -29,6 +29,28 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        .dashboard-shell {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        .dashboard-shell > aside {
+            width: 12rem;
+            flex: 0 0 12rem;
+        }
+
+        .sidebar-icon,
+        .sidebar-item > svg.sidebar-icon,
+        .sidebar-item svg.sidebar-icon {
+            width: 18px;
+            height: 18px;
+            min-width: 18px;
+            max-width: 20px;
+            max-height: 20px;
+            display: inline-block;
+        }
+    </style>
     <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -42,7 +64,7 @@
         <div class="min-h-screen flex-1 flex flex-col xl:pl-0">
             {% include 'dashboard/navbar.html' %}
 
-            <main class="flex-1 p-4 sm:p-6 lg:p-8">
+            <main class="flex-1 p-3 sm:p-4 lg:p-6">
                 {% block content %}{% endblock %}
             </main>
         </div>

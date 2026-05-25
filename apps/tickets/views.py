@@ -72,15 +72,17 @@ def ticket_create(request):
                 })
             )
         if form.is_valid():
-            # If admin/superadmin is creating the ticket they must choose a requester
-            if users_for_select and not request.POST.get('requester_id'):
-                form.add_error(None, 'Selecione um solicitante ao criar o chamado (obrigatório para administradores).')
+            on_behalf = request.POST.get('on_behalf') == '1'
+            requester_id = request.POST.get('requester_id')
+            # Only require requester when creating on behalf
+            if users_for_select and on_behalf and not requester_id:
+                form.add_error(None, 'Selecione um solicitante ao criar em nome de outro usuário.')
             else:
                 ticket = form.save(commit=False)
                 # determine requester: if admin provided requester_id use that, otherwise current user
-                if request.user.cargo in {User.Cargo.ADMIN, User.Cargo.SUPER_ADMIN} and request.POST.get('requester_id'):
+                if request.user.cargo in {User.Cargo.ADMIN, User.Cargo.SUPER_ADMIN} and requester_id:
                     try:
-                        requester_user = User.objects.get(pk=int(request.POST.get('requester_id')))
+                        requester_user = User.objects.get(pk=int(requester_id))
                     except Exception:
                         requester_user = request.user
                     ticket.requester = requester_user
