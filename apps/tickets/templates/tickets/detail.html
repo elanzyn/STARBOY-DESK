@@ -91,6 +91,52 @@
 {% block extra_body %}
 {% load static %}
 <script src="{% static 'tickets.js' %}"></script>
+<script>
+(function(){
+    function getCookie(name){
+        let v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+        return v ? decodeURIComponent(v[2]) : null;
+    }
+    const form = document.getElementById('change-status-form');
+    if(form){
+        form.addEventListener('submit', function(e){
+            e.preventDefault();
+            const url = form.getAttribute('action');
+            const select = form.querySelector('select[name="status"]');
+            const status = select ? select.value : null;
+            if(!status) return alert('Selecione um status.');
+            const csrftoken = getCookie('csrftoken');
+            const btn = form.querySelector('button[type="submit"]');
+            if(btn) btn.disabled = true;
+            fetch(url, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
+                body: new URLSearchParams({ status: status }),
+                credentials: 'same-origin'
+            }).then(r => {
+                if(!r.ok) return r.text().then(t => { let parsed=null; try{ parsed=JSON.parse(t);}catch(e){}; const msg=(parsed && (parsed.message||parsed.error))||t||r.statusText; throw new Error(msg); });
+                return r.json();
+            }).then(json => {
+                if(btn) btn.disabled = false;
+                if(json.error){ alert(json.message || json.error); return; }
+                // update badge
+                const badgeWrap = document.getElementById('status-badge');
+                if(badgeWrap){
+                    function makeBadgeHtml(status,label){
+                        if(status==='RESOLVED') return '<span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300>'+label+'</span>';
+                        if(status==='IN_PROGRESS') return '<span class="inline-flex items-center gap-2 rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-300>'+label+'</span>';
+                        if(status==='CLOSED') return '<span class="inline-flex items-center gap-2 rounded-full bg-slate-500/10 px-3 py-1 text-xs font-semibold text-slate-300>'+label+'</span>';
+                        return '<span class="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300>'+label+'</span>';
+                    }
+                    badgeWrap.innerHTML = makeBadgeHtml(json.status, json.status_display);
+                }
+                // dispatch toast
+                window.dispatchEvent(new CustomEvent('show-toast', {detail:{message: 'Status atualizado: '+json.status_display}}));
+            }).catch(err => { if(btn) btn.disabled=false; console.error(err); alert(err.message||'Erro ao atualizar status'); });
+        });
+    }
+})();
+</script>
 {% endblock %}
 
 {% endblock %}
