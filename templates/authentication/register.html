@@ -107,29 +107,5 @@
     })();
 </script>
 {% endblock %}
-
 {% endblock %}
-                    <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-300">Senha</label>
-                        {{ form.password1 }}
-                        {% if form.password1.errors %}<p class="mt-2 text-sm text-rose-300">{{ form.password1.errors|striptags }}</p>{% endif %}
-                    </div>
-                    <div>
-                        <label class="mb-2 block text-sm font-medium text-slate-300">Confirmar senha</label>
-                        {{ form.password2 }}
-                        {% if form.password2.errors %}<p class="mt-2 text-sm text-rose-300">{{ form.password2.errors|striptags }}</p>{% endif %}
-                    </div>
-                </div>
 
-                <button type="submit" class="w-full rounded-2xl bg-white px-4 py-3.5 text-sm font-bold text-slate-950 transition hover:opacity-90">
-                    Criar conta
-                </button>
-            </form>
-
-            <div class="mt-6 text-sm text-slate-400">
-                Já tem conta? <a href="/auth/login/" class="font-semibold text-white transition hover:opacity-90">Entrar</a>
-            </div>
-        </div>
-    </div>
-</section>
-{% endblock %}
