@@ -1,29 +1,29 @@
 {% load static %}
 <aside
     x-cloak
-    class="fixed inset-y-0 left-0 z-40 w-56 border-r border-white/8 bg-slate-950/95 backdrop-blur-xl transition-transform duration-300 xl:static xl:block xl:translate-x-0"
+    class="fixed inset-y-0 left-0 z-40 w-48 border-r border-white/8 bg-slate-950/95 backdrop-blur-xl transition-transform duration-300 xl:static xl:block xl:translate-x-0"
     :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full xl:translate-x-0'"
 >
     <div class="flex h-full flex-col">
-        <div class="flex h-16 items-center justify-between px-4 border-b border-white/8">
-            <a href="{% url 'dashboard:home' %}" class="flex items-center gap-3">
-                <div class="grid h-8 w-8 place-items-center rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 shadow-glow">
-                    <span class="text-sm font-bold text-white">SD</span>
+        <div class="flex h-14 items-center justify-between px-3 border-b border-white/8">
+            <a href="{% url 'dashboard:home' %}" class="flex items-center gap-2.5">
+                <div class="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-400 shadow-glow flex-shrink-0">
+                    <span class="text-xs font-bold text-white">SD</span>
                 </div>
-                <div>
-                    <p class="text-sm font-semibold tracking-[0.22em] text-slate-200">STARBOY</p>
-                    <p class="text-xs uppercase tracking-[0.35em] text-slate-500">Desk</p>
+                <div class="min-w-0">
+                    <p class="text-xs font-semibold tracking-[0.18em] text-slate-200 truncate">STARBOY</p>
+                    <p class="text-xs uppercase tracking-[0.22em] text-slate-500">Desk</p>
                 </div>
             </a>
 
-            <button @click="sidebarOpen = false" class="rounded-xl p-2 text-slate-400 hover:bg-white/5 xl:hidden" aria-label="Fechar menu">
+            <button @click="sidebarOpen = false" class="rounded-lg p-1.5 text-slate-400 hover:bg-white/5 xl:hidden" aria-label="Fechar menu">
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M18 6 6 18M6 6l12 12" stroke-width="1.75" stroke-linecap="round" />
                 </svg>
             </button>
         </div>
 
-        <nav class="flex-1 space-y-2 px-3 py-3">
+        <nav class="flex-1 space-y-1 px-2 py-2">
             {% with current=request.resolver_match.url_name %}
             <a href="{% url 'dashboard:home' %}" class="sidebar-item {% if current == 'home' %}is-active{% endif %}">
                 <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 11.25 12 4l9 7.25V20a1 1 0 0 1-1 1h-5.75v-6.5h-4.5V21H4a1 1 0 0 1-1-1v-8.75Z" stroke-width="1.8" stroke-linejoin="round"/></svg>
@@ -57,8 +57,8 @@
                 <span>Configurações</span>
             </a>
 
-            <div class="mt-6 border-t border-white/8 pt-4">
-                <p class="px-3 text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-500">Acesso</p>
+            <div class="mt-4 border-t border-white/8 pt-3">
+                <p class="px-2 text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-500">Acesso</p>
 
                 {% if user.cargo == 'SUPER_ADMIN' %}
                     <a href="{% url 'superadmin:users' %}" class="sidebar-item {% if request.resolver_match.app_name == 'superadmin' and request.resolver_match.url_name == 'users' %}is-active{% endif %}">

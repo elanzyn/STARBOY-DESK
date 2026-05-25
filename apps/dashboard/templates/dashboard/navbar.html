@@ -1,7 +1,7 @@
 <header class="sticky top-0 z-20 border-b border-white/8 bg-slate-950/80 backdrop-blur-xl">
-    <div class="flex h-20 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
-        <div class="flex min-w-0 items-center gap-3">
-            <button @click="sidebarOpen = true" class="inline-flex rounded-xl p-2 text-slate-400 hover:bg-white/5 xl:hidden" aria-label="Abrir menu">
+    <div class="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <div class="flex min-w-0 items-center gap-2">
+            <button @click="sidebarOpen = true" class="inline-flex rounded-lg p-1.5 text-slate-400 hover:bg-white/5 xl:hidden" aria-label="Abrir menu">
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M4 6h16M4 12h16M4 18h16" stroke-width="1.75" stroke-linecap="round" />
                 </svg>
@@ -13,9 +13,9 @@
             </div>
         </div>
 
-        <div class="flex flex-1 items-center justify-end gap-3">
+        <div class="flex flex-1 items-center justify-end gap-2">
             <form method="get" action="{% url 'dashboard:home' %}" class="hidden w-full max-w-md md:flex">
-                <label class="w-full flex items-center gap-3 rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm text-slate-400 shadow-glow">
+                <label class="w-full flex items-center gap-2.5 rounded-2xl border border-white/8 bg-white/5 px-3.5 py-2.5 text-sm text-slate-400 shadow-glow">
                     <svg class="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="m21 21-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke-width="1.75" stroke-linecap="round" />
                     </svg>
@@ -24,7 +24,7 @@
             </form>
 
             <div x-data="{ open: false }" class="relative">
-                <button @click="open = !open" class="relative inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/8 bg-white/5 text-slate-300 transition hover:bg-white/10">
+                <button @click="open = !open" class="relative inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/8 bg-white/5 text-slate-300 transition hover:bg-white/10">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 0 0-4-5.7V5a2 2 0 1 0-4 0v.3A6 6 0 0 0 6 11v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 0 1-6 0v-1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
                     </svg>
@@ -62,7 +62,7 @@
                 </div>
             </div>
 
-            <button id="dashboard-theme-toggle" type="button" class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/8 bg-white/5 text-slate-300 transition hover:bg-white/10" aria-label="Alternar tema" title="Alternar tema">
+            <button id="dashboard-theme-toggle" type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/8 bg-white/5 text-slate-300 transition hover:bg-white/10" aria-label="Alternar tema" title="Alternar tema">
                 <span id="dashboard-theme-icon" class="flex items-center justify-center">
                     <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path d="M12 3v1m0 16v1M4.2 4.2l.7.7m14.2 14.2.7.7M3 12h1m16 0h1M4.2 19.8l.7-.7m14.2-14.2.7-.7M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z" stroke-width="1.75" stroke-linecap="round" />
@@ -70,15 +70,15 @@
                 </span>
             </button>
 
-            <a href="{% url 'dashboard:export_csv' %}" class="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/8 bg-white/5 text-slate-300 transition hover:bg-white/10" title="Exportar relatório em CSV">
+            <a href="{% url 'dashboard:export_csv' %}" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/8 bg-white/5 text-slate-300 transition hover:bg-white/10" title="Exportar relatório em CSV">
                 <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </a>
 
             <div x-data="{ open: false }" class="relative">
-                <button @click="open = !open" class="flex items-center gap-3 rounded-2xl border border-white/8 bg-white/5 px-3 py-2 transition hover:bg-white/10">
-                    <div class="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-400 text-sm font-bold text-white shadow-glow">
+                <button @click="open = !open" class="flex items-center gap-2.5 rounded-2xl border border-white/8 bg-white/5 px-2.5 py-1.5 transition hover:bg-white/10">
+                    <div class="flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-br from-indigo-500 to-cyan-400 text-xs font-bold text-white shadow-glow">
                         <span>
                             {% if user.nome_completo %}
                                 {{ user.nome_completo|slice:":2"|upper }}
