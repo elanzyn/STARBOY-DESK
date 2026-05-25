@@ -24,18 +24,20 @@ def send_password_reset_email(user, token, request_obj=None):
     subject = '🔐 Redefinir Sua Senha - STARBOY DESK'
     
     # Context para o template
+    display_name = getattr(user, 'nome', None) or getattr(user, 'first_name', None) or (user.get_full_name() if hasattr(user, 'get_full_name') else None) or getattr(user, 'username', None) or getattr(user, 'email', '')
     context = {
         'user': user,
+        'display_name': display_name,
         'reset_url': reset_url,
         'reset_link': reset_url,
         'token': token,
         'expires_in': '1 hora',
     }
-    
+
     # Renderizar HTML do email
     html_message = render_to_string('emails/password_reset.html', context)
     plain_message = f"""
-Olá {user.nome},
+Olá {display_name},
 
 Você solicitou um reset de senha no STARBOY DESK.
 
