@@ -1,0 +1,175 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" class="h-full" x-data="shell()" x-init="init()">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}STARBOY DESK{% endblock %}</title>
+    <script>
+        (function () {
+            const theme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            document.documentElement.classList.toggle('dark', theme ? theme === 'dark' : prefersDark);
+        })();
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    boxShadow: {
+                        soft: '0 24px 80px -30px rgba(15, 23, 42, 0.55)',
+                        glow: '0 0 0 1px rgba(255,255,255,0.05), 0 30px 80px -20px rgba(59,130,246,0.35)'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link rel="icon" href="{% static 'img/favicon.ico' %}">
+    <style>
+        html { font-family: Inter, system-ui, sans-serif; }
+        [x-cloak] { display: none !important; }
+        html.light body {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+        html.light .glass {
+            background: rgba(255, 255, 255, .86);
+            border-color: rgba(15, 23, 42, .08);
+            box-shadow: 0 20px 70px -30px rgba(15, 23, 42, .18);
+        }
+        html.light .bg-slate-950,
+        html.light .bg-slate-900 {
+            background-color: #ffffff !important;
+        }
+        html.light .text-slate-100,
+        html.light .text-white {
+            color: #0f172a !important;
+        }
+        html.light .text-slate-300,
+        html.light .text-slate-400,
+        html.light .text-slate-500 {
+            color: #475569 !important;
+        }
+        html.light .border-white\/8,
+        html.light .border-white\/10 {
+            border-color: rgba(15, 23, 42, .08) !important;
+        }
+        html.light .bg-white\/5,
+        html.light .bg-white\/10 {
+            background-color: rgba(15, 23, 42, .03) !important;
+        }
+        .glass {
+            background: rgba(15, 23, 42, .72);
+            border: 1px solid rgba(255,255,255,.08);
+            backdrop-filter: blur(20px);
+            box-shadow: 0 20px 80px -24px rgba(15, 23, 42, .55);
+        }
+        .bg-grid {
+            background-image:
+                linear-gradient(rgba(148,163,184,.08) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148,163,184,.08) 1px, transparent 1px);
+            background-size: 48px 48px;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-full bg-slate-950 text-slate-100 antialiased">
+    <div class="pointer-events-none fixed inset-0 bg-grid opacity-25"></div>
+    <div class="pointer-events-none fixed -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-500/20 blur-3xl"></div>
+
+    <header class="sticky top-0 z-40 border-b border-white/8 bg-slate-950/75 backdrop-blur-xl">
+        <div class="mx-auto flex h-18 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+            <a href="/" class="flex items-center gap-3">
+                <div class="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-400 text-sm font-bold text-white shadow-glow">SD</div>
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">STARBOY DESK</p>
+                    <p class="text-sm text-slate-500">Plataforma premium de atendimento</p>
+                </div>
+            </a>
+            <nav class="hidden items-center gap-8 md:flex">
+                <a href="/" class="text-sm text-slate-300 transition hover:text-white">Início</a>
+                <a href="/dashboard/" class="text-sm text-slate-300 transition hover:text-white">Painel</a>
+                <a href="/#features" class="text-sm text-slate-300 transition hover:text-white">Recursos</a>
+                <a href="/#pricing" class="text-sm text-slate-300 transition hover:text-white">Planos</a>
+            </nav>
+            <div class="flex items-center gap-3">
+                {% if user.is_authenticated %}
+                    <a href="/dashboard/" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10">Abrir painel</a>
+                    <a href="/auth/logout/" class="hidden rounded-2xl px-4 py-2 text-sm font-semibold text-rose-300 transition hover:bg-rose-500/10 sm:inline-flex">Sair</a>
+                {% else %}
+                    <a href="/auth/login/" class="rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold text-slate-100 transition hover:bg-white/10">Entrar</a>
+                    <a href="/auth/register/" class="rounded-2xl bg-white px-4 py-2 text-sm font-semibold text-slate-950 transition hover:opacity-90">Cadastrar</a>
+                {% endif %}
+                <button @click="toggleTheme()" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10" aria-label="Alternar tema">
+                    <svg x-show="!dark" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v1m0 16v1M4.2 4.2l.7.7m14.2 14.2.7.7M3 12h1m16 0h1M4.2 19.8l.7-.7m14.2-14.2.7-.7M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z" stroke-width="1.75" stroke-linecap="round"/></svg>
+                    <svg x-show="dark" class="h-4 w-4 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke-width="1.75" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="relative z-10">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="relative z-10 border-t border-white/8 bg-slate-950/80">
+        <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-8 text-sm text-slate-500 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+            <p>© {% now "Y" %} STARBOY DESK. Todos os direitos reservados.</p>
+            <div class="flex items-center gap-5">
+                <a href="/#features" class="transition hover:text-slate-300">Recursos</a>
+                <a href="/#proof" class="transition hover:text-slate-300">Prova social</a>
+                <a href="/#cta" class="transition hover:text-slate-300">Começar</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function shell() {
+            return {
+                dark: document.documentElement.classList.contains('dark'),
+                init() {
+                    this.dark = document.documentElement.classList.contains('dark');
+                    document.documentElement.classList.toggle('light', !this.dark);
+                },
+                toggleTheme() {
+                    this.dark = !this.dark;
+                    document.documentElement.classList.toggle('dark', this.dark);
+                    document.documentElement.classList.toggle('light', !this.dark);
+                    localStorage.setItem('theme', this.dark ? 'dark' : 'light');
+                },
+            }
+        }
+    </script>
+    {% block extra_body %}{% endblock %}
+
+    {# Django messages as toasts (small, accessible) #}
+    <div aria-live="polite" class="fixed inset-0 flex items-end px-4 py-6 pointer-events-none sm:p-6 z-50">
+      <div class="w-full flex flex-col items-end space-y-2">
+        {% for message in messages %}
+        <div x-data x-init="setTimeout(()=> $el.remove(), 3500)" class="pointer-events-auto w-full max-w-sm rounded-2xl px-4 py-3 text-sm shadow-lg"
+             aria-hidden="false" role="status"
+             style="display:flex;align-items:center; justify-content:space-between;"
+             {% if message.tags %} data-tags="{{ message.tags }}" {% endif %}>
+            <div class="flex items-center gap-3">
+                {% if 'success' in message.tags %}
+                <div class="h-8 w-8 flex items-center justify-center rounded-full bg-emerald-500/10 text-emerald-300">✓</div>
+                {% elif 'error' in message.tags or 'danger' in message.tags %}
+                <div class="h-8 w-8 flex items-center justify-center rounded-full bg-rose-500/10 text-rose-300">!</div>
+                {% else %}
+                <div class="h-8 w-8 flex items-center justify-center rounded-full bg-indigo-500/10 text-indigo-300">i</div>
+                {% endif %}
+                <div class="flex-1 text-left text-sm text-white">{{ message }}</div>
+            </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+</body>
+</html>

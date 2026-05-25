@@ -1,0 +1,229 @@
+html {
+    font-family: 'Inter', sans-serif;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+.dashboard-shell {
+    min-height: 100vh;
+    display: flex;
+    background:
+        radial-gradient(circle at top left, rgba(99, 102, 241, 0.12), transparent 30%),
+        radial-gradient(circle at top right, rgba(20, 184, 166, 0.1), transparent 24%),
+        #020617;
+}
+
+html.light .dashboard-shell {
+    background:
+        radial-gradient(circle at top left, rgba(99, 102, 241, 0.08), transparent 30%),
+        radial-gradient(circle at top right, rgba(20, 184, 166, 0.07), transparent 24%),
+        #f8fafc;
+}
+
+.glass-panel {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(15, 23, 42, 0.72);
+    border-radius: 24px;
+    box-shadow: 0 24px 60px -30px rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(18px);
+}
+
+html.light .glass-panel {
+    border-color: rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.86);
+    box-shadow: 0 24px 60px -30px rgba(15, 23, 42, 0.16);
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border-radius: 1rem;
+    color: rgb(148 163 184);
+    transition: all 0.18s ease;
+}
+
+html.light .sidebar-item {
+    color: rgb(71 85 105);
+}
+
+html.light .sidebar-item:hover {
+    background: rgba(15, 23, 42, 0.04);
+    color: rgb(15 23 42);
+}
+
+html.light .sidebar-item.is-active {
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(14, 165, 233, 0.08));
+    color: rgb(15 23 42);
+    box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.12);
+}
+
+html.light .skeleton-card {
+    border-color: rgba(15, 23, 42, 0.08);
+    background: rgba(255, 255, 255, 0.7);
+}
+
+html.light .skeleton {
+    background: rgba(15, 23, 42, 0.08);
+}
+
+.sidebar-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgb(248 250 252);
+    transform: translateX(2px);
+}
+
+.sidebar-item.is-active {
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.25), rgba(14, 165, 233, 0.18));
+    color: rgb(255 255 255);
+    box-shadow: inset 0 0 0 1px rgba(129, 140, 248, 0.18);
+}
+
+.sidebar-icon {
+    width: 1.15rem;
+    height: 1.15rem;
+    flex: none;
+}
+
+.skeleton-card {
+    border-radius: 1.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.03);
+    padding: 1.25rem;
+}
+
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.14), transparent);
+    animation: shimmer 1.35s infinite;
+}
+
+.skeleton-line {
+    height: 0.85rem;
+}
+
+@keyframes shimmer {
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+/* Global custom select / dropdown styling to match STARBOY DESK dark theme */
+select, .custom-select, .dropdown-menu {
+    background: rgba(15, 23, 42, 0.72) !important; /* dark panel */
+    color: #e6eef8 !important; /* light text */
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    padding: 0.5rem 0.75rem !important;
+    border-radius: 0.75rem !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+}
+
+/* Ensure native <option> elements show readable text */
+select option {
+    background: #0f172a !important;
+    color: #e6eef8 !important;
+}
+
+/* Hover and focus states */
+select:hover, .custom-select:hover, .dropdown-menu a:hover {
+    background: rgba(255,255,255,0.02) !important;
+}
+select:focus, .custom-select:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 6px rgba(99,102,241,0.06) !important;
+    border-color: rgba(99,102,241,0.6) !important;
+}
+
+/* Dropdown menu items */
+.dropdown-menu a, .dropdown-menu button {
+    color: #e6eef8 !important;
+}
+
+/* Small helper for selects used inline (tickets list) */
+.change-status-row select, .change-status-row .custom-select {
+    background: transparent !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+    padding: 0.35rem 0.5rem !important;
+    border-radius: 999px !important;
+}
+
+/* In light mode, make selects consistent */
+html.light select, html.light .custom-select, html.light .dropdown-menu {
+    background: rgba(255,255,255,0.9) !important;
+    color: #0f172a !important;
+}
+
+/* Extra vendor-specific rules to improve native dropdown appearance on Windows/Chromium and Edge */
+select::-ms-expand { display: none; }
+select:focus { -webkit-text-fill-color: #e6eef8 !important; }
+select, select option {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+}
+
+/* Force option hover background where supported */
+select option:hover { background: rgba(255,255,255,0.03) !important; color: #e6eef8 !important; }
+
+/* Stronger selector for inline ticket selects */
+.change-status-row select, .change-status-row select option, select[data-custom-select="true"] {
+    background-color: rgba(15, 23, 42, 0.85) !important;
+    color: #e6eef8 !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* On Windows Chrome the OPTION background may still be OS-controlled; provide a fallback clickable custom menu style for better UX (used where possible) */
+.custom-select-fallback {
+    position: relative;
+}
+.custom-select-fallback .selected {
+    cursor: pointer;
+}
+.custom-select-fallback .options {
+    display: none;
+    position: absolute;
+    z-index: 50;
+    left: 0; right: 0;
+    background: rgba(15,23,42,0.95);
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 0.5rem;
+    max-height: 200px;
+    overflow: auto;
+}
+.custom-select-fallback .options a { display: block; padding: 0.5rem 0.75rem; color: #e6eef8; }
+.custom-select-fallback .options a:hover { background: rgba(255,255,255,0.02); }
+
+/* Strong universal fallback for native selects to make them dark in most browsers */
+select, select[data-custom-select], .select-sd {
+    background-color: rgba(15,23,42,0.95) !important;
+    color: #e6eef8 !important;
+    border: 1px solid rgba(255,255,255,0.06) !important;
+}
+
+/* Make sure the placeholder and text are visible */
+select:-webkit-autofill, select:-internal-autofill-selected {
+    -webkit-text-fill-color: #e6eef8 !important;
+}
+
+/* Improve option readability where supported */
+select option, select[data-custom-select] option, .select-sd option {
+    background: rgba(15,23,42,0.95) !important;
+    color: #e6eef8 !important;
+}
+
+/* Extra: apply a small caret color for better contrast */
+select { caret-color: #e6eef8 !important; }

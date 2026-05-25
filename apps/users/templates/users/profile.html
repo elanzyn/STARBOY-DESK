@@ -1,0 +1,38 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% block title %}Perfil | STARBOY DESK{% endblock %}
+{% block content %}
+<div class="glass-panel mx-auto max-w-3xl p-5 sm:p-6">
+    <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Perfil</p>
+    <h1 class="mt-2 text-2xl font-semibold text-white">{{ user.nome_completo }}</h1>
+    <p class="mt-2 text-sm text-slate-400">{{ user.email }}</p>
+
+    <form method="post" class="mt-6 space-y-5">
+        {% csrf_token %}
+        <div>
+            <label class="mb-2 block text-sm font-medium text-slate-300">Nome completo</label>
+            {{ form.nome_completo }}
+        </div>
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+                <label class="mb-2 block text-sm font-medium text-slate-300">Username</label>
+                {{ form.username }}
+            </div>
+            <div>
+                <label class="mb-2 block text-sm font-medium text-slate-300">Email</label>
+                {{ form.email }}
+            </div>
+        </div>
+        <div>
+            <label class="mb-2 block text-sm font-medium text-slate-300">Bio</label>
+            {{ form.bio }}
+        </div>
+        <div>
+            <label class="mb-2 block text-sm font-medium text-slate-300">Telefone</label>
+            {{ form.telefone }}
+        </div>
+        <button type="submit" class="rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-950 transition hover:opacity-90">
+            Salvar alterações
+        </button>
+    </form>
+</div>
+{% endblock %}

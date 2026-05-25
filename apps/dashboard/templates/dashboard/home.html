@@ -1,0 +1,273 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Painel | STARBOY DESK{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    {% if search_query %}
+    <section class="glass-panel p-4">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Resultados da busca</p>
+                <h3 class="mt-1 text-lg font-semibold text-white">Resultados para "{{ search_query }}"</h3>
+            </div>
+            <div class="text-sm text-slate-400">{{ search_tickets|length }} chamados • {{ search_users|length }} usuários</div>
+        </div>
+
+        <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+                <h4 class="text-sm font-semibold text-slate-300">Chamados</h4>
+                <div class="mt-2 space-y-2">
+                    {% for t in search_tickets %}
+                        <a href="{% url 'tickets:detail' t.pk %}" class="block rounded-xl border border-white/6 p-3 hover:bg-white/5">
+                            <p class="font-medium text-white">{{ t.title }}</p>
+                            <p class="mt-1 text-xs text-slate-400">#{{ t.id }} • {{ t.requester.nome_completo }}</p>
+                        </a>
+                    {% empty %}
+                        <p class="text-sm text-slate-500">Nenhum chamado encontrado.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div>
+                <h4 class="text-sm font-semibold text-slate-300">Usuários</h4>
+                <div class="mt-2 space-y-2">
+                    {% for u in search_users %}
+                        {% if request.user.cargo == 'SUPER_ADMIN' or request.user.cargo == 'ADMIN' %}
+                            <a href="{% url 'superadmin:users' %}?q={{ u.pk }}" class="block rounded-xl border border-white/6 p-3 hover:bg-white/5">
+                        {% elif u.pk == request.user.pk %}
+                            <a href="{% url 'users:profile' %}" class="block rounded-xl border border-white/6 p-3 hover:bg-white/5">
+                        {% else %}
+                            <button type="button" class="open-user-info-btn block w-full text-left rounded-xl border border-white/6 p-3 hover:bg-white/5" data-user-name="{{ u.nome_completo|default:u.email }}" data-user-email="{{ u.email }}" data-user-role="{% if u.cargo == 'SUPER_ADMIN' %}Super Admin{% elif u.cargo == 'ADMIN' %}Admin{% else %}Usuário{% endif %}" data-user-id="{{ u.pk }}">
+                        {% endif %}
+                            <p class="font-medium text-white">{{ u.nome_completo|default:u.email }} {% if u.cargo == 'SUPER_ADMIN' %}<span class="inline-block ml-2 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-300">Super Admin</span>{% elif u.cargo == 'ADMIN' %}<span class="inline-block ml-2 rounded-full bg-indigo-500/10 px-2 py-0.5 text-xs font-semibold text-indigo-200">Admin</span>{% else %}<span class="inline-block ml-2 rounded-full bg-white/5 px-2 py-0.5 text-xs font-semibold text-slate-300">Usuário</span>{% endif %}</p>
+                            <p class="mt-1 text-xs text-slate-400">{{ u.email }}</p>
+                        {% if request.user.cargo == 'SUPER_ADMIN' or request.user.cargo == 'ADMIN' or u.pk == request.user.pk %}
+                            </a>
+                        {% else %}
+                            </button>
+                        {% endif %}
+                    {% empty %}
+                        <p class="text-sm text-slate-500">Nenhum usuário encontrado.</p>
+                    {% endfor %}
+
+                    <!-- User info modal (public) -->
+                    <div id="user-info-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+                        <div id="user-info-overlay" class="absolute inset-0 bg-black/60"></div>
+                        <div class="relative z-10 w-full max-w-md rounded-2xl bg-slate-900/90 border border-white/8 p-5">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <h3 id="modal-user-name" class="text-lg font-semibold text-white">Nome do usuário</h3>
+                                    <p id="modal-user-role" class="mt-1 text-sm text-slate-400">Cargo</p>
+                                </div>
+                                <button id="modal-close" class="text-slate-300 hover:text-white">Fechar</button>
+                            </div>
+                            <div class="mt-4">
+                                <p class="text-sm text-slate-300">Email: <span id="modal-user-email" class="text-slate-100"></span></p>
+                                <p class="mt-2 text-xs text-slate-400">Informações públicas do usuário. Para ações administrativas, faça login como Admin.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% load static %}
+                    <script src="{% static 'dashboard_user_modal.js' %}"></script>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="glass-panel overflow-hidden">
+        <div class="relative flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-end lg:justify-between">
+            <div class="max-w-3xl">
+                <p class="text-xs font-semibold uppercase tracking-[0.35em] text-indigo-300/80">Painel principal</p>
+                <h2 class="mt-3 text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                    Bem-vindo, {{ user.nome_completo|default:user.email }}.
+                </h2>
+                <p class="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
+                    Seu hub operacional em tempo real para chamados, SLA, atividade da equipe e solicitações corporativas.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+                <a href="{% url 'tickets:create' %}" class="inline-flex items-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950 transition hover:opacity-90">
+                    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14" stroke-width="1.75" stroke-linecap="round"/></svg>
+                    Criar chamado
+                </a>
+                <a href="{% url 'notifications:list' %}" class="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-semibold text-slate-100 transition hover:bg-white/10">
+                    Ver atividades
+                </a>
+                {% if tickets_resolved_count or tickets_open_count %}
+                {% if tickets_enable_requester_close %}
+                <a href="{% url 'tickets:list' %}?filter=awaiting_close" class="inline-flex items-center gap-2 rounded-2xl border border-amber-500/10 px-4 py-3 text-sm font-semibold text-amber-300 transition hover:bg-amber-500/5">
+                    Aguardando fechamento ({{ tickets_resolved_count }})
+                </a>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {% for stat in common_stats %}
+            {% include 'dashboard/partials/stat_card.html' with label=stat.label value=stat.value icon=stat.icon %}
+        {% endfor %}
+    </section>
+
+    {% if role_stats %}
+    <section>
+        <div class="mb-4 flex items-end justify-between">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Visão por cargo</p>
+                <h3 class="mt-2 text-lg font-semibold text-white">{{ role_label }}</h3>
+            </div>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {% for stat in role_stats %}
+                {% include 'dashboard/partials/stat_card.html' with label=stat.label value=stat.value icon=stat.icon %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+
+    <section class="grid gap-6 xl:grid-cols-[1.5fr_0.9fr]">
+        <div class="space-y-6">
+            <div class="glass-panel p-5 sm:p-6">
+                <div class="mb-5 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Chamados</p>
+                        <h3 class="mt-2 text-lg font-semibold text-white">Volume semanal</h3>
+                    </div>
+                    <span class="rounded-full bg-indigo-500/10 px-3 py-1 text-xs font-semibold text-indigo-200">Gráfico</span>
+                </div>
+                <div x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 180)">
+                    <div x-show="!loaded" class="space-y-3">
+                        {% include 'dashboard/partials/skeleton_card.html' %}
+                    </div>
+                    <div x-show="loaded">
+                        {{ tickets_chart|json_script:"tickets-chart-data" }}
+                        <canvas id="ticketsChart" height="110"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-5 sm:p-6">
+                <div class="mb-5 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Chamados</p>
+                        <h3 class="mt-2 text-lg font-semibold text-white">Últimos tickets</h3>
+                    </div>
+                </div>
+
+                <div class="overflow-hidden rounded-3xl border border-white/8">
+                    <table class="min-w-full divide-y divide-white/8">
+                        <thead class="bg-white/5">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Ticket</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Solicitante</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Atualizado</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-white/8">
+                            {% for ticket in recent_tickets %}
+                            <tr class="transition hover:bg-white/[0.03]">
+                                <td class="px-4 py-4">
+                                    <p class="font-medium text-white">{{ ticket.title }}</p>
+                                    <p class="mt-1 text-xs text-slate-500">#{{ ticket.id }}</p>
+                                </td>
+                                <td class="px-4 py-4 text-sm text-slate-300">{{ ticket.requester.nome_completo }}</td>
+                                <td class="px-4 py-4">
+                                    <span class="rounded-full px-3 py-1 text-xs font-semibold
+                                        {% if ticket.status == 'RESOLVED' %}bg-emerald-500/10 text-emerald-300
+                                        {% elif ticket.status == 'IN_PROGRESS' %}bg-cyan-500/10 text-cyan-300
+                                        {% elif ticket.status == 'CLOSED' %}bg-slate-500/10 text-slate-300
+                                        {% else %}bg-indigo-500/10 text-indigo-300{% endif %}">
+                                        {{ ticket.get_status_display }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-4 text-sm text-slate-400">{{ ticket.updated_at|date:'d/m/Y H:i' }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="px-4 py-10 text-center text-sm text-slate-500">
+                                    Nenhum ticket encontrado.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="glass-panel p-5 sm:p-6">
+                <div class="mb-5 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Status</p>
+                        <h3 class="mt-2 text-lg font-semibold text-white">Distribuição de tickets</h3>
+                    </div>
+                </div>
+                <div x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 180)">
+                    <div x-show="!loaded" class="space-y-3">
+                        {% include 'dashboard/partials/skeleton_card.html' %}
+                    </div>
+                    <div x-show="loaded">
+                        {{ status_chart|json_script:"status-chart-data" }}
+                        <canvas id="statusChart" height="220"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-panel p-5 sm:p-6">
+                <div class="mb-5">
+                    <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Atividade</p>
+                    <h3 class="mt-2 text-lg font-semibold text-white">Recentes</h3>
+                </div>
+                <div class="space-y-4">
+                    {% for item in activities %}
+                        <article class="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                            <div class="flex items-start gap-3">
+                                <div class="mt-1 h-2.5 w-2.5 rounded-full bg-indigo-400"></div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="text-sm font-semibold text-white">{{ item.title }}</p>
+                                    <p class="mt-1 text-sm text-slate-400">{{ item.message }}</p>
+                                    <p class="mt-2 text-xs text-slate-600">{{ item.meta }}</p>
+                                </div>
+                            </div>
+                        </article>
+                    {% empty %}
+                        <div class="rounded-2xl border border-dashed border-white/10 p-6 text-sm text-slate-500">
+                            Sem atividades recentes.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if user.cargo == 'SUPER_ADMIN' %}
+            <div class="glass-panel p-5 sm:p-6">
+                <div class="mb-5">
+                    <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Aprovações</p>
+                    <h3 class="mt-2 text-lg font-semibold text-white">Reset de senha</h3>
+                </div>
+                <div class="space-y-3">
+                    {% for reset in pending_resets %}
+                        <div class="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                            <p class="text-sm font-medium text-white">{{ reset.user.nome_completo }}</p>
+                            <p class="mt-1 text-sm text-slate-400">{{ reset.get_status_display }}</p>
+                            <p class="mt-2 text-xs text-slate-600">{{ reset.solicitado_em|date:'d/m/Y H:i' }}</p>
+                        </div>
+                    {% empty %}
+                        <div class="rounded-2xl border border-dashed border-white/10 p-6 text-sm text-slate-500">
+                            Nenhuma solicitação pendente.
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+{% endblock %}

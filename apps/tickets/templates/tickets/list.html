@@ -1,0 +1,214 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% block title %}Chamados | STARBOY DESK{% endblock %}
+{% block content %}
+<div class="glass-panel p-5 sm:p-6">
+    <div class="mb-5 flex items-center justify-between">
+        <div>
+            <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Chamados</p>
+            <h1 class="mt-2 text-2xl font-semibold text-white">Chamados</h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <a href="{% url 'tickets:create' %}" class="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950">Novo chamado</a>
+            <div class="flex items-center gap-2">
+                <a href="?" class="text-sm px-3 py-2 rounded-lg {% if not active_filter %}bg-white/5 text-white{% else %}text-slate-300{% endif %}">Todos</a>
+            {% if tickets_enable_requester_close %}
+            <a href="?filter=awaiting_close" class="text-sm px-3 py-2 rounded-lg {% if active_filter == 'awaiting_close' %}bg-amber-500/10 text-amber-300{% else %}text-slate-300{% endif %}">Aguardando fechamento</a>
+            {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="overflow-hidden rounded-3xl border border-white/8">
+        <table class="min-w-full divide-y divide-white/8">
+            <thead class="bg-white/5">
+                <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Título</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Status</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Prioridade</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Criado</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-white/8">
+                {% for ticket in tickets %}
+                <tr class="hover:bg-white/[0.03]">
+                    <td class="px-4 py-4 text-sm text-white">
+                        <a href="{% url 'tickets:detail' ticket.pk %}" class="font-medium text-white hover:underline">{{ ticket.title }}</a>
+                        <p class="mt-1 text-xs text-slate-500">#{{ ticket.id }} • {{ ticket.requester.nome_completo }} {% if ticket.requester.cargo == 'SUPER_ADMIN' %}<span class="text-xs inline-block ml-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-amber-300">Super Admin</span>{% elif ticket.requester.cargo == 'ADMIN' %}<span class="text-xs inline-block ml-1 rounded-full bg-indigo-500/10 px-2 py-0.5 text-indigo-200">Admin</span>{% else %}<span class="text-xs inline-block ml-1 rounded-full bg-white/5 px-2 py-0.5 text-slate-300">Usuário</span>{% endif %}</p>
+                    </td>
+                    <td class="px-4 py-4 text-sm">
+                        <div class="flex items-center gap-3">
+                            <div id="badge-{{ ticket.pk }}">
+                                {% if ticket.status == 'RESOLVED' %}
+                                <span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">Resolvido</span>
+                                {% elif ticket.status == 'IN_PROGRESS' %}
+                                <span class="inline-flex items-center gap-2 rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-300">Em andamento</span>
+                                {% elif ticket.status == 'CLOSED' %}
+                                <span class="inline-flex items-center gap-2 rounded-full bg-slate-500/10 px-3 py-1 text-xs font-semibold text-slate-300">Fechado</span>
+                                {% else %}
+                                <span class="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300">Aberto</span>
+                                {% endif %}
+                            </div>
+                            {% if ticket.requester_confirmed %}
+                                <span class="ml-2 inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-semibold text-amber-300">Solicitado fechamento</span>
+                            {% endif %}
+                            {% if request.user.cargo == 'ADMIN' or request.user.cargo == 'SUPER_ADMIN' or ticket.assignee == request.user %}
+                            <form class="change-status-row" data-url="{% url 'tickets:change_status' ticket.pk %}" onsubmit="return false;">
+                                {% csrf_token %}
+                                <select name="status" data-custom-select="true" style="background-color: rgba(15,23,42,0.95) !important; color: #e6eef8 !important;" class="rounded-full border border-white/6 text-sm text-white px-2 py-1 focus:outline-none">
+                                    {% for key,label in ticket.Status.choices %}
+                                                    {% if key != 'CLOSED' or request.user.cargo == 'ADMIN' or request.user.cargo == 'SUPER_ADMIN' %}
+                                            <option value="{{ key }}" {% if ticket.status == key %}selected{% endif %}>{{ label }}</option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                <button data-pk="{{ ticket.pk }}" class="ml-2 rounded-full bg-indigo-500 px-2 py-1 text-xs font-semibold change-status-btn">OK</button>
+                            </form>
+                            {% endif %}
+
+                            {% if not ticket.assignee and request.user.is_authenticated %}
+                                <button data-url="{% url 'tickets:assign_self' ticket.pk %}" class="ml-3 rounded-full bg-white/6 px-2 py-1 text-xs text-slate-100 assign-self-btn">Atribuir a mim</button>
+                            {% endif %}
+
+                            {% if tickets_enable_requester_close and ticket.requester_confirmed %}
+                                {% if request.user.cargo == 'ADMIN' or request.user.cargo == 'SUPER_ADMIN' %}
+                                    <button data-url="{% url 'tickets:change_status' ticket.pk %}" data-status="CLOSED" class="ml-3 rounded-full bg-amber-500 px-2 py-1 text-xs font-semibold close-request-btn">Fechar chamado</button>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-4 py-4 text-sm text-slate-300">{{ ticket.get_priority_display }}</td>
+                    <td class="px-4 py-4 text-sm text-slate-400">{{ ticket.created_at|date:'d/m/Y H:i' }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="px-4 py-10 text-center text-sm text-slate-500">Nenhum ticket encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+                    </div>
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <div class="mt-4 px-4 py-3 bg-slate-900/50 border-t border-white/6 flex items-center justify-between">
+                    <div class="text-sm text-slate-400">Página {{ page_obj.number }} de {{ paginator.num_pages }}</div>
+                    <div class="flex items-center gap-2">
+                        {% if page_obj.has_previous %}
+                            <a href="?{% if active_filter %}filter={{ active_filter }}&{% endif %}page={{ page_obj.previous_page_number }}" class="px-3 py-1 rounded-md bg-white/5 text-sm text-white">Anterior</a>
+                        {% endif %}
+
+                        {% for i in paginator.page_range %}
+                            {% if i == page_obj.number %}
+                                <span class="px-3 py-1 rounded-md bg-indigo-600 text-sm text-white">{{ i }}</span>
+                            {% else %}
+                                <a href="?{% if active_filter %}filter={{ active_filter }}&{% endif %}page={{ i }}" class="px-3 py-1 rounded-md text-sm text-slate-300 hover:bg-white/5">{{ i }}</a>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                            <a href="?{% if active_filter %}filter={{ active_filter }}&{% endif %}page={{ page_obj.next_page_number }}" class="px-3 py-1 rounded-md bg-white/5 text-sm text-white">Próxima</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block extra_body %}
+<script>
+(function(){
+    function getCookie(name){
+        let v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+        return v ? decodeURIComponent(v[2]) : null;
+    }
+    function makeBadgeHtml(status, label){
+        if(status === 'RESOLVED') return '<span class="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">' + label + '</span>';
+        if(status === 'IN_PROGRESS') return '<span class="inline-flex items-center gap-2 rounded-full bg-cyan-500/10 px-3 py-1 text-xs font-semibold text-cyan-300">' + label + '</span>';
+        if(status === 'CLOSED') return '<span class="inline-flex items-center gap-2 rounded-full bg-slate-500/10 px-3 py-1 text-xs font-semibold text-slate-300">' + label + '</span>';
+        return '<span class="inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-semibold text-amber-300">' + label + '</span>';
+    }
+
+    document.querySelectorAll('.change-status-btn').forEach(btn => {
+        btn.addEventListener('click', function(e){
+            const form = btn.closest('.change-status-row');
+            if(!form) return;
+            const url = form.dataset.url;
+            const select = form.querySelector('select[name="status"]');
+            const status = select ? select.value : null;
+            if(!status) return;
+            const csrftoken = getCookie('csrftoken');
+            btn.disabled = true;
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'X-Requested-With':'XMLHttpRequest'
+                },
+                body: new URLSearchParams({status: status}),
+                credentials: 'same-origin'
+            }).then(r => {
+                if(!r.ok){
+                    return r.text().then(text => {
+                        let parsed = null;
+                        try { parsed = JSON.parse(text); } catch(e) { parsed = null; }
+                        const msg = (parsed && (parsed.message || parsed.error)) || text || r.statusText;
+                        throw new Error(msg);
+                    });
+                }
+                return r.json();
+            }).then(json => {
+                btn.disabled = false;
+                if(json.error){
+                    alert(json.message || json.error);
+                    return;
+                }
+                const badgeWrap = document.getElementById('badge-' + btn.dataset.pk);
+                if(badgeWrap){
+                    badgeWrap.innerHTML = makeBadgeHtml(json.status, json.status_display);
+                }
+                // dispatch toast event if global handler exists
+                window.dispatchEvent(new CustomEvent('show-toast', {detail:{message: 'Status atualizado: ' + json.status_display}}));
+            }).catch(err => { btn.disabled = false; console.error(err); alert(err.message || 'Erro ao atualizar status'); });
+        });
+    });
+
+    // assign self from list
+    document.querySelectorAll('.assign-self-btn').forEach(b => {
+        b.addEventListener('click', function(){
+            const url = b.dataset.url || b.getAttribute('data-url');
+            if(!url) return;
+            const csrftoken = getCookie('csrftoken');
+            fetch(url, { method: 'POST', headers: {'X-CSRFToken': csrftoken, 'X-Requested-With':'XMLHttpRequest'}, credentials: 'same-origin' })
+                .then(r => r.json())
+                .then(json => {
+                    if(json.error){ alert(json.message || json.error); return; }
+                    window.location.reload();
+                }).catch(err => { console.error(err); alert('Erro ao atribuir a si mesmo'); });
+        });
+    });
+
+    // close requester-confirmed ticket (admin)
+    document.querySelectorAll('.close-request-btn').forEach(b => {
+        b.addEventListener('click', function(){
+            const url = b.dataset.url || b.getAttribute('data-url');
+            const status = b.dataset.status || 'CLOSED';
+            if(!url) return;
+            const csrftoken = getCookie('csrftoken');
+            if(!confirm('Confirmar fechamento do chamado?')) return;
+            b.disabled = true;
+            fetch(url, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken, 'X-Requested-With': 'XMLHttpRequest' },
+                body: new URLSearchParams({ status: status }),
+                credentials: 'same-origin'
+            }).then(r => r.json()).then(json => {
+                b.disabled = false;
+                if(json.error){ alert(json.message || json.error); return; }
+                window.location.reload();
+            }).catch(err => { b.disabled = false; console.error(err); alert('Erro ao fechar chamado'); });
+        });
+    });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,27 @@
+<div class="glass-panel p-5 sm:p-6">
+    <div class="flex items-center justify-between gap-4">
+        <div>
+            <p class="text-sm font-medium text-slate-400">{{ label }}</p>
+            <p class="mt-3 text-3xl font-semibold tracking-tight text-white">{{ value }}</p>
+        </div>
+        <div class="grid h-12 w-12 place-items-center rounded-2xl bg-white/5 text-slate-300">
+            {% if icon == 'ticket' %}
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 7h10v10H7zM4 10a2 2 0 0 0 0 4m16-4a2 2 0 0 1 0 4" stroke-width="1.75" stroke-linejoin="round"/></svg>
+            {% elif icon == 'check' %}
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m5 13 4 4L19 7" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {% elif icon == 'clock' %}
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 6v6l4 2m5-2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {% elif icon == 'users' %}
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M16 11a4 4 0 1 0-8 0 4 4 0 0 0 8 0Zm-11 9c1.6-3.2 4.5-5 7-5s5.4 1.8 7 5" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {% elif icon == 'shield' %}
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3 4 6v6c0 5 3.2 8.6 8 9 4.8-.4 8-4 8-9V6l-8-3Z" stroke-width="1.75" stroke-linejoin="round"/></svg>
+            {% elif icon == 'inbox' %}
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h16v11H4zM4 15l3 5h10l3-5" stroke-width="1.75" stroke-linejoin="round"/></svg>
+            {% elif icon == 'bell' %}
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 0 0-4-5.7V5a2 2 0 1 0-4 0v.3A6 6 0 0 0 6 11v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 0 1-6 0v-1" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            {% elif icon == 'chat' or icon == 'message' %}
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M5 5h14v10H9l-4 4V5Z" stroke-width="1.75" stroke-linejoin="round"/></svg>
+            {% endif %}
+        </div>
+    </div>
+</div>

@@ -1,0 +1,60 @@
+{% extends 'base/base.html' %}
+{% block title %}Entrar | STARBOY DESK{% endblock %}
+{% block content %}
+<section class="mx-auto flex min-h-[calc(100vh-9rem)] max-w-7xl items-center px-4 py-12 sm:px-6 lg:px-8">
+    <div class="grid w-full gap-8 lg:grid-cols-[0.9fr_0.8fr]">
+        <div class="hidden rounded-[2rem] border border-white/8 bg-white/[0.03] p-8 lg:block">
+            <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">Bem-vindo de volta</p>
+            <h1 class="mt-4 max-w-xl text-4xl font-black tracking-tight text-white">Entre para acompanhar chamados, SLA e operações.</h1>
+            <div class="mt-8 space-y-4 text-sm text-slate-400">
+                <div class="flex items-center gap-3"><span class="text-emerald-400">✓</span> Entrada por email e senha</div>
+                <div class="flex items-center gap-3"><span class="text-emerald-400">✓</span> Segurança corporativa com sessão/JWT</div>
+                <div class="flex items-center gap-3"><span class="text-emerald-400">✓</span> Interface premium e responsiva</div>
+            </div>
+        </div>
+
+        <div class="glass rounded-[2rem] p-6 sm:p-8">
+            <div class="mb-8">
+                <p class="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500">STARBOY DESK</p>
+                <h2 class="mt-3 text-3xl font-bold text-white">Entrar</h2>
+                <p class="mt-2 text-sm text-slate-400">Acesse o painel para continuar a operação.</p>
+            </div>
+
+            <form method="post" class="space-y-5">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="rounded-2xl border border-rose-500/20 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-slate-300">Email</label>
+                    {{ form.email }}
+                    {% if form.email.errors %}<p class="mt-2 text-sm text-rose-300">{{ form.email.errors|striptags }}</p>{% endif %}
+                </div>
+
+                <div>
+                    <label class="mb-2 block text-sm font-medium text-slate-300">Senha</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}<p class="mt-2 text-sm text-rose-300">{{ form.password.errors|striptags }}</p>{% endif %}
+                </div>
+
+                <label class="flex items-center gap-3 text-sm text-slate-400">
+                    {{ form.remember }}
+                    <span>Lembrar login</span>
+                </label>
+
+                <button type="submit" class="w-full rounded-2xl bg-white px-4 py-3.5 text-sm font-bold text-slate-950 transition hover:opacity-90">
+                    Entrar no sistema
+                </button>
+            </form>
+
+            <div class="mt-6 flex items-center justify-between text-sm text-slate-400">
+                <a href="/auth/register/" class="transition hover:text-white">Criar conta</a>
+                <a href="{% url 'authentication:forgot_password' %}" class="transition hover:text-white">Esqueceu a senha?</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

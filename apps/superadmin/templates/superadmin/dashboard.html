@@ -1,0 +1,9 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% block title %}Painel Admin | STARBOY DESK{% endblock %}
+{% block content %}
+<div class="grid gap-4 sm:grid-cols-3">
+    <div class="glass-panel p-5"><p class="text-sm text-slate-400">Usuários</p><p class="mt-3 text-3xl font-semibold text-white">{{ users_count }}</p></div>
+    <div class="glass-panel p-5"><p class="text-sm text-slate-400">Admins ativos</p><p class="mt-3 text-3xl font-semibold text-white">{{ admins_count }}</p></div>
+    <div class="glass-panel p-5"><p class="text-sm text-slate-400">Resets</p><p class="mt-3 text-3xl font-semibold text-white">{{ resets_count }}</p></div>
+</div>
+{% endblock %}

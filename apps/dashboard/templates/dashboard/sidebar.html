@@ -1,0 +1,97 @@
+{% load static %}
+<aside
+    x-cloak
+    class="fixed inset-y-0 left-0 z-40 w-72 border-r border-white/8 bg-slate-950/95 backdrop-blur-xl transition-transform duration-300 xl:static xl:block xl:translate-x-0"
+    :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full xl:translate-x-0'"
+>
+    <div class="flex h-full flex-col">
+        <div class="flex h-20 items-center justify-between px-6 border-b border-white/8">
+            <a href="{% url 'dashboard:home' %}" class="flex items-center gap-3">
+                <div class="grid h-10 w-10 place-items-center rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-400 shadow-glow">
+                    <span class="text-sm font-bold text-white">SD</span>
+                </div>
+                <div>
+                    <p class="text-sm font-semibold tracking-[0.22em] text-slate-200">STARBOY</p>
+                    <p class="text-xs uppercase tracking-[0.35em] text-slate-500">Desk</p>
+                </div>
+            </a>
+
+            <button @click="sidebarOpen = false" class="rounded-xl p-2 text-slate-400 hover:bg-white/5 xl:hidden" aria-label="Fechar menu">
+                <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M18 6 6 18M6 6l12 12" stroke-width="1.75" stroke-linecap="round" />
+                </svg>
+            </button>
+        </div>
+
+        <nav class="flex-1 space-y-1 px-3 py-5">
+            {% with current=request.resolver_match.url_name %}
+            <a href="{% url 'dashboard:home' %}" class="sidebar-item {% if current == 'home' %}is-active{% endif %}">
+                <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 11.25 12 4l9 7.25V20a1 1 0 0 1-1 1h-5.75v-6.5h-4.5V21H4a1 1 0 0 1-1-1v-8.75Z" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                <span>Painel</span>
+            </a>
+            <a href="{% url 'tickets:list' %}" class="sidebar-item {% if request.resolver_match.app_name == 'tickets' and request.resolver_match.url_name == 'list' %}is-active{% endif %}">
+                <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 7h8M8 12h8M8 17h5" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span>Chamados</span>
+            </a>
+            <a href="{% url 'tickets:create' %}" class="sidebar-item {% if request.resolver_match.app_name == 'tickets' and request.resolver_match.url_name == 'create' %}is-active{% endif %}">
+                <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 5v14M5 12h14" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span>Criar chamado</span>
+            </a>
+            <a href="{% url 'analytics:dashboard' %}" class="sidebar-item {% if request.resolver_match.app_name == 'analytics' %}is-active{% endif %}">
+                <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19V5m0 14h16M8 15.5V9m4 6.5V7m4 8.5V11" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span>Análises</span>
+            </a>
+            <a href="{% url 'notifications:list' %}" class="sidebar-item {% if request.resolver_match.app_name == 'notifications' %}is-active{% endif %}">
+                <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 0 0-4-5.7V5a2 2 0 1 0-4 0v.3A6 6 0 0 0 6 11v3.2c0 .5-.2 1-.6 1.4L4 17h5m6 0v1a3 3 0 0 1-6 0v-1" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Notificações</span>
+                {% if sidebar_notifications_count %}
+                    <span class="ml-auto rounded-full bg-indigo-500/20 px-2 py-0.5 text-xs font-semibold text-indigo-300">{{ sidebar_notifications_count }}</span>
+                {% endif %}
+            </a>
+            <a href="{% url 'users:profile' %}" class="sidebar-item {% if request.resolver_match.app_name == 'users' and request.resolver_match.url_name == 'profile' %}is-active{% endif %}">
+                <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 15.5a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 0c-4.4 0-8 2.2-8 5" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span>Perfil</span>
+            </a>
+            <a href="{% url 'users:settings' %}" class="sidebar-item {% if request.resolver_match.app_name == 'users' and request.resolver_match.url_name == 'settings' %}is-active{% endif %}">
+                <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 6h16M7 6v12m10-12v12M4 18h16" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span>Configurações</span>
+            </a>
+
+            <div class="mt-6 border-t border-white/8 pt-4">
+                <p class="px-3 text-[11px] font-semibold uppercase tracking-[0.32em] text-slate-500">Acesso</p>
+
+                {% if user.cargo == 'SUPER_ADMIN' %}
+                    <a href="{% url 'superadmin:users' %}" class="sidebar-item {% if request.resolver_match.app_name == 'superadmin' and request.resolver_match.url_name == 'users' %}is-active{% endif %}">
+                        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 19V5m0 14h16M7 16V9m5 7V7m5 9v-5" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        <span>Gerenciar usuários</span>
+                    </a>
+                    <a href="{% url 'superadmin:logs' %}" class="sidebar-item {% if request.resolver_match.app_name == 'superadmin' and request.resolver_match.url_name == 'logs' %}is-active{% endif %}">
+                        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 12h6M9 16h6M10 4h4l4 4v12a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                        <span>Logs</span>
+                    </a>
+                    <a href="{% url 'superadmin:dashboard' %}" class="sidebar-item {% if request.resolver_match.app_name == 'superadmin' and request.resolver_match.url_name == 'dashboard' %}is-active{% endif %}">
+                        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2 4 5.5V12c0 4.8 3.2 9.3 8 10 4.8-.7 8-5.2 8-10V5.5L12 2Z" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                        <span>Painel Admin</span>
+                    </a>
+                {% elif user.cargo == 'ADMIN' %}
+                    <a href="{% url 'tickets:list' %}" class="sidebar-item">
+                        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 7h8M8 12h8M8 17h5" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        <span>Chamados atribuídos</span>
+                    </a>
+                    <a href="{% url 'analytics:dashboard' %}" class="sidebar-item">
+                        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v18M5 8h14M5 16h14" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        <span>SLA</span>
+                    </a>
+                {% else %}
+                    <a href="{% url 'tickets:list' %}" class="sidebar-item">
+                        <svg class="sidebar-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 7h8M8 12h8M8 17h5" stroke-width="1.8" stroke-linecap="round"/></svg>
+                        <span>Meus chamados</span>
+                    </a>
+                {% endif %}
+            </div>
+            {% endwith %}
+        </nav>
+    </div>
+</aside>
+
+<div x-show="sidebarOpen" x-cloak class="fixed inset-0 z-30 bg-slate-950/60 backdrop-blur-sm xl:hidden" @click="sidebarOpen = false"></div>

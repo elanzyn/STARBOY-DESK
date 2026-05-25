@@ -1,0 +1,70 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% block title %}Criar Chamado | STARBOY DESK{% endblock %}
+{% block content %}
+<div class="glass-panel mx-auto max-w-3xl p-5 sm:p-6">
+    <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Novo chamado</p>
+    <h1 class="mt-2 text-2xl font-semibold text-white">Criar chamado</h1>
+    <p class="mt-3 text-sm text-slate-400">Abra um chamado com prioridade e descrição completas.</p>
+
+    <form method="post" class="mt-6 space-y-5">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="mt-2 text-sm text-rose-300">{{ form.non_field_errors|striptags }}</div>{% endif %}
+        <div>
+            <label class="mb-2 block text-sm font-medium text-slate-300">Título</label>
+            {{ form.title }}
+            {% if form.title.errors %}<p class="mt-2 text-sm text-rose-300">{{ form.title.errors|striptags }}</p>{% endif %}
+        </div>
+        <div>
+            <label class="mb-2 block text-sm font-medium text-slate-300">Descrição</label>
+            {{ form.description }}
+            {% if form.description.errors %}<p class="mt-2 text-sm text-rose-300">{{ form.description.errors|striptags }}</p>{% endif %}
+        </div>
+        <div>
+            <label class="mb-2 block text-sm font-medium text-slate-300">Prioridade</label>
+            {{ form.priority }}
+            {% if form.priority.errors %}<p class="mt-2 text-sm text-rose-300">{{ form.priority.errors|striptags }}</p>{% endif %}
+        </div>
+
+        {% if users_for_select %}
+        <div class="border border-white/6 rounded-xl p-3 bg-white/2">
+            <button type="button" id="toggle-on-behalf" class="w-full text-left flex items-center justify-between px-3 py-2 rounded-lg bg-transparent text-slate-100">
+                <span class="font-medium">Criar em nome de outro usuário</span>
+                <svg id="toggle-icon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 011.08 1.04l-4.25 4.25a.75.75 0 01-1.06 0L5.21 8.27a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+            </button>
+            <div id="on-behalf-panel" class="mt-3 hidden">
+                <p class="text-xs text-slate-400 mb-2">(Obrigatório ao criar em nome de outro usuário — garante que o chamado apareça para o solicitante correto.)</p>
+                <label class="mb-2 block text-sm font-medium text-slate-300">Solicitante * <span class="inline-block ml-2 text-slate-400" title="Obrigatório para administradores: garante que o chamado seja atribuído ao solicitante correto e evita chamados órfãos.">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="inline h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-8-4.5a1 1 0 100 2 1 1 0 000-2zm1 9a1 1 0 10-2 0v-4a1 1 0 012 0v4z" clip-rule="evenodd"/></svg>
+                    <span class="sr-only">Informação: obrigatório para administradores</span>
+                </span></label>
+                <select name="requester_id" id="requester-select" data-custom-select="true" required aria-required="true" style="background-color: rgba(15,23,42,0.95) !important; color: #e6eef8 !important; {% if form.non_field_errors %}border-color: #fb7185 !important; box-shadow: 0 0 0 3px rgba(248,113,113,0.08);{% endif %}" class="w-full rounded-2xl border border-white/6 px-4 py-3 text-slate-100 mb-3">
+                    <option value="">-- Selecionar usuário (obrigatório) --</option>
+                    {% for u in users_for_select %}
+                        <option value="{{ u.pk }}">{{ u.nome_completo|default:u.email }} ({{ u.email }})</option>
+                    {% endfor %}
+                </select>
+
+                <label class="mb-2 block text-sm font-medium text-slate-300">Atribuir para</label>
+                {% if form.assignee %}
+                    {{ form.assignee }}
+                {% else %}
+                    <select name="assignee" data-custom-select="true" style="background-color: rgba(15,23,42,0.95) !important; color: #e6eef8 !important;" class="w-full rounded-2xl border border-white/6 px-4 py-3 text-slate-100">
+                        <option value="">-- Selecionar usuário (opcional) --</option>
+                        {% for u in users_for_select %}
+                            <option value="{{ u.pk }}">{{ u.nome_completo|default:u.email }} ({{ u.email }})</option>
+                        {% endfor %}
+                    </select>
+                {% endif %}
+            </div>
+        </div>
+        {% load static %}
+        <script src="{% static 'tickets_create.js' %}"></script>
+
+        {% endif %}
+
+        <button type="submit" class="rounded-2xl bg-white px-5 py-3 text-sm font-bold text-slate-950 transition hover:opacity-90">
+            Criar chamado
+        </button>
+    </form>
+</div>
+{% endblock %}

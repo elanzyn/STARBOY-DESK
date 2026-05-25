@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br" class="h-full" x-data="dashboardShell()" x-init="init()">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}STARBOY DESK{% endblock %}</title>
+    <script>
+        (function () {
+            const stored = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const dark = stored ? stored === 'dark' : prefersDark;
+            document.documentElement.classList.toggle('dark', dark);
+        })();
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    boxShadow: {
+                        glow: '0 0 0 1px rgba(255,255,255,0.04), 0 24px 60px -20px rgba(15,23,42,0.65)'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="{% static 'dashboard/js/dashboard.js' %}" defer></script>
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="min-h-full bg-slate-950 text-slate-100 antialiased font-sans">
+    <div class="dashboard-shell">
+        {% include 'dashboard/sidebar.html' %}
+
+        <div class="min-h-screen flex-1 flex flex-col xl:pl-0">
+            {% include 'dashboard/navbar.html' %}
+
+            <main class="flex-1 p-4 sm:p-6 lg:p-8">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    {% include 'dashboard/toast.html' %}
+    {% block extra_body %}{% endblock %}
+</body>
+</html>

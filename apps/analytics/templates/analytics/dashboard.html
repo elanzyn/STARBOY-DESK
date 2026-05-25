@@ -1,0 +1,75 @@
+{% extends 'dashboard/dashboard_base.html' %}
+{% block title %}Analytics | STARBOY DESK{% endblock %}
+{% block content %}
+<div class="glass-panel p-6">
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="p-4 rounded-xl bg-gray-900">
+      <p class="text-sm text-slate-400">Tickets abertos</p>
+      <h3 class="text-2xl font-bold text-white">{{ opened }}</h3>
+    </div>
+    <div class="p-4 rounded-xl bg-gray-900">
+      <p class="text-sm text-slate-400">Resolvidos hoje</p>
+      <h3 class="text-2xl font-bold text-white">{{ resolved_today }}</h3>
+    </div>
+    <div class="p-4 rounded-xl bg-gray-900">
+      <p class="text-sm text-slate-400">Tickets em atraso</p>
+      <h3 class="text-2xl font-bold text-white">{{ overdue_count }}</h3>
+    </div>
+  </div>
+
+  <div class="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="col-span-2 p-4 rounded-xl bg-gray-900">
+      <h4 class="text-white font-semibold">Tickets por dia (últimos 14 dias)</h4>
+      <canvas id="ticketsPerDay" height="120"></canvas>
+    </div>
+    <div class="p-4 rounded-xl bg-gray-900">
+      <h4 class="text-white font-semibold">Taxa de resolução</h4>
+      <p class="mt-2 text-white text-2xl">{{ resolution_rate }}%</p>
+      <h5 class="mt-4 text-sm text-slate-400">Média de resposta: {{ avg_response_minutes|default:'—' }} min</h5>
+    </div>
+  </div>
+
+  <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div class="p-4 rounded-xl bg-gray-900">
+      <h4 class="text-white font-semibold">Admins mais ativos (7 dias)</h4>
+      <ul class="mt-3 space-y-2">
+        {% for admin in top_admins %}
+        <li class="flex items-center justify-between">
+          <div>
+            <p class="text-white">{{ admin.nome_completo }}</p>
+            <p class="text-xs text-slate-400">{{ admin.email }}</p>
+          </div>
+          <div class="text-sm text-white">{{ admin.resolved_count }}</div>
+        </li>
+        {% empty %}
+        <li class="text-slate-400">Nenhum registro.</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="p-4 rounded-xl bg-gray-900">
+      <h4 class="text-white font-semibold">Tickets por prioridade</h4>
+      <ul class="mt-3 space-y-2">
+        {% for p in by_priority %}
+        <li class="flex items-center justify-between text-sm text-slate-300">{{ p.priority }} <span class="text-white">{{ p.count }}</span></li>
+        {% empty %}
+        <li class="text-slate-400">Nenhum registro.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+</div>
+
+{% block extra_body %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function(){
+  const labels = {{ tickets_per_day_labels|safe }};
+  const data = {{ tickets_per_day_series|safe }};
+  const ctx = document.getElementById('ticketsPerDay').getContext('2d');
+  new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: 'Tickets', data: data, borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.12)', fill: true }] }, options: { responsive:true } });
+})();
+</script>
+{% endblock %}
+
+{% endblock %}
