@@ -237,7 +237,7 @@ def ticket_change_status(request, pk):
         'status': ticket.status,
         'status_display': ticket.get_status_display(),
         'changed_at': latest_log.changed_at.isoformat() if latest_log else None,
-        'changed_by': latest_log.changed_by.email if latest_log and latest_log.changed_by else None,
+        'changed_by': (latest_log.changed_by.nome_completo if latest_log and latest_log.changed_by and getattr(latest_log.changed_by, 'nome_completo', None) else (latest_log.changed_by.email if latest_log and latest_log.changed_by else None)), 
         'duration': duration_human,
     })
 

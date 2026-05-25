@@ -78,7 +78,7 @@
             <div class="rounded-xl border border-white/6 p-3 flex items-center justify-between">
                 <div>
                     <p class="text-sm text-white">{{ log.changed_at|date:'d/m/Y H:i' }} — {{ log.old_status }} → {{ log.new_status }}</p>
-                    <p class="text-xs text-slate-400">por {% if log.changed_by %}{{ log.changed_by.email }}{% else %}Sistema{% endif %}{% if log.duration_seconds %} • Duração: {{ log.duration_human }}{% endif %}</p>
+                    <p class="text-xs text-slate-400">por {% if log.changed_by %}{{ log.changed_by.nome_completo|default:log.changed_by.email }}{% else %}Sistema{% endif %}{% if log.duration_seconds %} • Duração: {{ log.duration_human }}{% endif %}</p>
                 </div>
             </div>
             {% empty %}
