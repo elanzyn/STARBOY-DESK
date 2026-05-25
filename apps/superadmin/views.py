@@ -160,11 +160,8 @@ def password_resets(request):
             reject_password_reset_request(reset, request.user)
         return redirect('superadmin:password_resets')
 
-    from django.conf import settings
-    # montar base URL (protocol + host)
-    domain = settings.ALLOWED_HOSTS[0] if settings.ALLOWED_HOSTS else '127.0.0.1:8000'
-    protocol = 'https' if not settings.DEBUG else 'http'
-    base_url = f"{protocol}://{domain}/"
+    # montar base URL preciso a partir da requisição (inclui porta)
+    base_url = request.build_absolute_uri('/')
 
     resets = PasswordResetRequest.objects.select_related('user', 'aprovado_por').order_by('-solicitado_em')[:20]
     return render(request, 'superadmin/password_resets.html', {'page_title': 'Solicitações reset', 'resets': resets, 'base_url': base_url})
