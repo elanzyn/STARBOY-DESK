@@ -118,6 +118,7 @@
 {% block extra_body %}
 <script>
 (function(){
+    console.log('tickets list inline script loaded');
     function getCookie(name){
         let v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
         return v ? decodeURIComponent(v[2]) : null;
