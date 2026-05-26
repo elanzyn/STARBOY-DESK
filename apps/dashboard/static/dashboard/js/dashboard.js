@@ -41,23 +41,6 @@ function buildChart(canvasId, chartData, type, options) {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    const themeButton = document.getElementById('dashboard-theme-toggle');
-    if (themeButton) {
-        themeButton.addEventListener('click', () => {
-            const dark = document.documentElement.classList.contains('dark');
-            const nextDark = !dark;
-            document.documentElement.classList.toggle('dark', nextDark);
-            document.documentElement.classList.toggle('light', !nextDark);
-            localStorage.setItem('theme', nextDark ? 'dark' : 'light');
-            const icon = document.getElementById('dashboard-theme-icon');
-            if (icon) {
-                icon.innerHTML = nextDark
-                    ? '<svg class="h-5 w-5 text-amber-300" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke-width="1.75" stroke-linejoin="round"/></svg>'
-                    : '<svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v1m0 16v1M4.2 4.2l.7.7m14.2 14.2.7.7M3 12h1m16 0h1M4.2 19.8l.7-.7m14.2-14.2.7-.7M12 6a6 6 0 1 0 0 12 6 6 0 0 0 0-12Z" stroke-width="1.75" stroke-linecap="round"/></svg>';
-            }
-        });
-    }
-
     buildChart('ticketsChart', 'tickets-chart-data', 'line', {
         responsive: true,
         maintainAspectRatio: false,
@@ -108,13 +91,20 @@ document.addEventListener('DOMContentLoaded', () => {
             try{
                 s.setAttribute('data-custom-select','true');
                 s.classList.add('select-sd');
-                s.style.backgroundColor = 'rgba(15,23,42,0.95)';
-                s.style.color = '#e6eef8';
-                s.style.border = '1px solid rgba(255,255,255,0.06)';
+                const isLight = document.documentElement.classList.contains('light');
+                const bg = isLight ? 'rgba(255,255,255,0.96)' : 'rgba(15,23,42,0.95)';
+                const fg = isLight ? '#0f172a' : '#e6eef8';
+                const border = isLight ? '1px solid rgba(15,23,42,0.16)' : '1px solid rgba(255,255,255,0.06)';
+                s.style.backgroundColor = bg;
+                s.style.color = fg;
+                s.style.border = border;
             }catch(e){console.warn('applyGlobalSelectStyling', e)}
             // try style options too (best-effort)
             try{
-                Array.from(s.options).forEach(opt => { opt.style.background = 'rgba(15,23,42,0.95)'; opt.style.color='#e6eef8'; });
+                const isLight = document.documentElement.classList.contains('light');
+                const optBg = isLight ? '#ffffff' : 'rgba(15,23,42,0.95)';
+                const optFg = isLight ? '#0f172a' : '#e6eef8';
+                Array.from(s.options).forEach(opt => { opt.style.background = optBg; opt.style.color = optFg; });
             }catch(e){}
         });
     }

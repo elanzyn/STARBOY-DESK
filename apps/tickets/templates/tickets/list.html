@@ -7,14 +7,25 @@
             <p class="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500">Chamados</p>
             <h1 class="mt-2 text-2xl font-semibold text-white">Chamados</h1>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex flex-wrap items-center gap-3">
             <a href="{% url 'tickets:create' %}" class="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-slate-950">Novo chamado</a>
-            <div class="flex items-center gap-2">
-                <a href="?" class="text-sm px-3 py-2 rounded-lg {% if not active_filter %}bg-white/5 text-white{% else %}text-slate-300{% endif %}">Todos</a>
             {% if tickets_enable_requester_close %}
-            <a href="?filter=awaiting_close" class="text-sm px-3 py-2 rounded-lg {% if active_filter == 'awaiting_close' %}bg-amber-500/10 text-amber-300{% else %}text-slate-300{% endif %}">Aguardando fechamento</a>
-            {% endif %}
+            <div class="flex items-center gap-2">
+                <a href="?filter=awaiting_close{% if active_category %}&category={{ active_category }}{% endif %}" class="text-sm px-3 py-2 rounded-lg {% if active_filter == 'awaiting_close' %}bg-amber-500/10 text-amber-300{% else %}text-slate-300{% endif %}">Aguardando fechamento</a>
             </div>
+            {% endif %}
+            <form method="get" class="flex items-center gap-2">
+                {% if active_filter %}
+                    <input type="hidden" name="filter" value="{{ active_filter }}">
+                {% endif %}
+                <label class="text-xs font-semibold uppercase tracking-[0.28em] text-slate-500">Categoria</label>
+                <select name="category" data-custom-select="true" onchange="this.form.submit()" class="rounded-full border border-white/6 px-3 py-2 text-xs text-slate-100">
+                    <option value="">Todas</option>
+                    {% for key, label in categories %}
+                        <option value="{{ key }}" {% if active_category == key %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </form>
         </div>
     </div>
     <div class="overflow-hidden rounded-3xl border border-white/8">
@@ -22,6 +33,7 @@
             <thead class="bg-white/5">
                 <tr>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Título</th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Categoria</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Status</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Prioridade</th>
                     <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-[0.28em] text-slate-400">Criado</th>
@@ -33,6 +45,9 @@
                     <td class="px-4 py-4 text-sm text-white">
                         <a href="{% url 'tickets:detail' ticket.pk %}" class="font-medium text-white hover:underline">{{ ticket.title }}</a>
                         <p class="mt-1 text-xs text-slate-500">#{{ ticket.id }} • {{ ticket.requester.nome_completo }} {% if ticket.requester.cargo == 'SUPER_ADMIN' %}<span class="text-xs inline-block ml-1 rounded-full bg-amber-500/10 px-2 py-0.5 text-amber-300">Super Admin</span>{% elif ticket.requester.cargo == 'ADMIN' %}<span class="text-xs inline-block ml-1 rounded-full bg-indigo-500/10 px-2 py-0.5 text-indigo-200">Admin</span>{% else %}<span class="text-xs inline-block ml-1 rounded-full bg-white/5 px-2 py-0.5 text-slate-300">Usuário</span>{% endif %}</p>
+                    </td>
+                    <td class="px-4 py-4 text-sm">
+                        <span class="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold {{ ticket.category_badge_class }}">{{ ticket.get_category_display }}</span>
                     </td>
                     <td class="px-4 py-4 text-sm">
                         <div class="flex items-center gap-3">
@@ -53,7 +68,7 @@
                             {% if request.user.cargo == 'ADMIN' or request.user.cargo == 'SUPER_ADMIN' or ticket.assignee == request.user %}
                             <form class="change-status-row" data-url="{% url 'tickets:change_status' ticket.pk %}" onsubmit="return false;">
                                 {% csrf_token %}
-                                <select name="status" data-custom-select="true" style="background-color: rgba(15,23,42,0.95) !important; color: #e6eef8 !important;" class="rounded-full border border-white/6 text-sm text-white px-2 py-1 focus:outline-none">
+                                <select name="status" data-custom-select="true" class="rounded-full border border-white/6 text-sm text-white px-2 py-1 focus:outline-none">
                                     {% for key,label in ticket.Status.choices %}
                                                     {% if key != 'CLOSED' or request.user.cargo == 'ADMIN' or request.user.cargo == 'SUPER_ADMIN' %}
                                             <option value="{{ key }}" {% if ticket.status == key %}selected{% endif %}>{{ label }}</option>
@@ -64,7 +79,7 @@
                             </form>
                             {% endif %}
 
-                            {% if not ticket.assignee and request.user.is_authenticated %}
+                            {% if not ticket.assignee and request.user.cargo == 'SUPER_ADMIN' %}
                                 <button data-url="{% url 'tickets:assign_self' ticket.pk %}" class="ml-3 rounded-full bg-white/6 px-2 py-1 text-xs text-slate-100 assign-self-btn">Atribuir a mim</button>
                             {% endif %}
 
@@ -79,7 +94,7 @@
                     <td class="px-4 py-4 text-sm text-slate-400">{{ ticket.created_at|date:'d/m/Y H:i' }}</td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="4" class="px-4 py-10 text-center text-sm text-slate-500">Nenhum ticket encontrado.</td></tr>
+                <tr><td colspan="5" class="px-4 py-10 text-center text-sm text-slate-500">Nenhum ticket encontrado.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
@@ -91,19 +106,19 @@
                     <div class="text-sm text-slate-400">Página {{ page_obj.number }} de {{ paginator.num_pages }}</div>
                     <div class="flex items-center gap-2">
                         {% if page_obj.has_previous %}
-                            <a href="?{% if active_filter %}filter={{ active_filter }}&{% endif %}page={{ page_obj.previous_page_number }}" class="px-3 py-1 rounded-md bg-white/5 text-sm text-white">Anterior</a>
+                            <a href="?{% if active_filter %}filter={{ active_filter }}&{% endif %}{% if active_category %}category={{ active_category }}&{% endif %}page={{ page_obj.previous_page_number }}" class="px-3 py-1 rounded-md bg-white/5 text-sm text-white">Anterior</a>
                         {% endif %}
 
                         {% for i in paginator.page_range %}
                             {% if i == page_obj.number %}
                                 <span class="px-3 py-1 rounded-md bg-indigo-600 text-sm text-white">{{ i }}</span>
                             {% else %}
-                                <a href="?{% if active_filter %}filter={{ active_filter }}&{% endif %}page={{ i }}" class="px-3 py-1 rounded-md text-sm text-slate-300 hover:bg-white/5">{{ i }}</a>
+                                <a href="?{% if active_filter %}filter={{ active_filter }}&{% endif %}{% if active_category %}category={{ active_category }}&{% endif %}page={{ i }}" class="px-3 py-1 rounded-md text-sm text-slate-300 hover:bg-white/5">{{ i }}</a>
                             {% endif %}
                         {% endfor %}
 
                         {% if page_obj.has_next %}
-                            <a href="?{% if active_filter %}filter={{ active_filter }}&{% endif %}page={{ page_obj.next_page_number }}" class="px-3 py-1 rounded-md bg-white/5 text-sm text-white">Próxima</a>
+                            <a href="?{% if active_filter %}filter={{ active_filter }}&{% endif %}{% if active_category %}category={{ active_category }}&{% endif %}page={{ page_obj.next_page_number }}" class="px-3 py-1 rounded-md bg-white/5 text-sm text-white">Próxima</a>
                         {% endif %}
                     </div>
                 </div>
@@ -118,7 +133,6 @@
 {% block extra_body %}
 <script>
 (function(){
-    console.log('tickets list inline script loaded');
     function getCookie(name){
         let v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
         return v ? decodeURIComponent(v[2]) : null;

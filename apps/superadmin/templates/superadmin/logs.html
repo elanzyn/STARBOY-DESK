@@ -14,7 +14,7 @@
     </div>
 
     <form method="get" class="mb-4 flex flex-wrap gap-3 items-center">
-        <select name="type" data-custom-select="true" style="background-color: rgba(15,23,42,0.95) !important; color: #e6eef8 !important;" class="rounded-2xl px-3 py-2 text-sm text-white border border-white/8">
+        <select name="type" data-custom-select="true" class="rounded-2xl px-3 py-2 text-sm text-white border border-white/8">
             <option value="all" {% if filter_type == 'all' %}selected{% endif %}>Todos</option>
             <option value="ticket" {% if filter_type == 'ticket' %}selected{% endif %}>Chamados</option>
             <option value="password_reset" {% if filter_type == 'password_reset' %}selected{% endif %}>Reset de senha</option>

@@ -20,6 +20,11 @@
             {% if form.description.errors %}<p class="mt-2 text-sm text-rose-300">{{ form.description.errors|striptags }}</p>{% endif %}
         </div>
         <div>
+            <label class="mb-2 block text-sm font-medium text-slate-300">Categoria</label>
+            {{ form.category }}
+            {% if form.category.errors %}<p class="mt-2 text-sm text-rose-300">{{ form.category.errors|striptags }}</p>{% endif %}
+        </div>
+        <div>
             <label class="mb-2 block text-sm font-medium text-slate-300">Prioridade</label>
             {{ form.priority }}
             {% if form.priority.errors %}<p class="mt-2 text-sm text-rose-300">{{ form.priority.errors|striptags }}</p>{% endif %}
@@ -38,7 +43,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="inline h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-8-4.5a1 1 0 100 2 1 1 0 000-2zm1 9a1 1 0 10-2 0v-4a1 1 0 012 0v4z" clip-rule="evenodd"/></svg>
                     <span class="sr-only">Informação: obrigatório para administradores</span>
                 </span></label>
-                <select name="requester_id" id="requester-select" data-custom-select="true" aria-required="false" style="background-color: rgba(15,23,42,0.95) !important; color: #e6eef8 !important; {% if form.non_field_errors %}border-color: #fb7185 !important; box-shadow: 0 0 0 3px rgba(248,113,113,0.08);{% endif %}" class="w-full rounded-2xl border border-white/6 px-4 py-3 text-slate-100 mb-3">
+                <select name="requester_id" id="requester-select" data-custom-select="true" aria-required="false" class="w-full rounded-2xl border border-white/6 px-4 py-3 text-slate-100 mb-3 {% if form.non_field_errors %}border-rose-400/60 ring-2 ring-rose-400/20{% endif %}">
                     <option value="">-- Selecionar usuário (obrigatório) --</option>
                     {% for u in users_for_select %}
                         <option value="{{ u.pk }}" {% if request.POST.requester_id == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.nome_completo|default:u.email }} ({{ u.email }})</option>
@@ -49,7 +54,7 @@
                 {% if form.assignee %}
                     {{ form.assignee }}
                 {% else %}
-                    <select name="assignee" data-custom-select="true" style="background-color: rgba(15,23,42,0.95) !important; color: #e6eef8 !important;" class="w-full rounded-2xl border border-white/6 px-4 py-3 text-slate-100">
+                    <select name="assignee" data-custom-select="true" class="w-full rounded-2xl border border-white/6 px-4 py-3 text-slate-100">
                         <option value="">-- Selecionar usuário (opcional) --</option>
                         {% for u in users_for_select %}
                             <option value="{{ u.pk }}" {% if request.POST.assignee == u.pk|stringformat:"s" %}selected{% endif %}>{{ u.nome_completo|default:u.email }} ({{ u.email }})</option>

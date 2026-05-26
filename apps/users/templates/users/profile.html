@@ -11,6 +11,7 @@
         <div>
             <label class="mb-2 block text-sm font-medium text-slate-300">Nome completo</label>
             {{ form.nome_completo }}
+            <p id="profile-name-helper" class="mt-2 text-xs text-slate-400">Use apenas letras e espaços.</p>
         </div>
         <div class="grid gap-5 sm:grid-cols-2">
             <div>
@@ -35,4 +36,46 @@
         </button>
     </form>
 </div>
+{% block extra_body %}
+<script>
+    (function(){
+        const nameInput = document.getElementById('id_nome_completo');
+        const helper = document.getElementById('profile-name-helper');
+        const namePattern = /^[A-Za-zÀ-ÖØ-öø-ÿ]+(?:[ '\-][A-Za-zÀ-ÖØ-öø-ÿ]+)*$/;
+        const normalizeName = (value) => value.replace(/\s+/g, ' ').trim();
+
+        function validateName(){
+            if(!nameInput || !helper) return;
+            const normalized = normalizeName(nameInput.value);
+            if(!normalized){
+                helper.textContent = 'Use apenas letras e espaços.';
+                helper.classList.remove('text-rose-300');
+                helper.classList.add('text-slate-400');
+                nameInput.removeAttribute('aria-invalid');
+                return;
+            }
+            if(!namePattern.test(normalized)){
+                helper.textContent = 'Nomes não podem conter números.';
+                helper.classList.remove('text-slate-400');
+                helper.classList.add('text-rose-300');
+                nameInput.setAttribute('aria-invalid', 'true');
+                return;
+            }
+            helper.textContent = 'Nome válido.';
+            helper.classList.remove('text-rose-300');
+            helper.classList.add('text-emerald-300');
+            nameInput.removeAttribute('aria-invalid');
+        }
+
+        if(nameInput){
+            nameInput.addEventListener('input', validateName);
+            nameInput.addEventListener('blur', () => {
+                nameInput.value = normalizeName(nameInput.value);
+                validateName();
+            });
+            validateName();
+        }
+    })();
+</script>
+{% endblock %}
 {% endblock %}

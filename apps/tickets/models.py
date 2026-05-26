@@ -16,6 +16,18 @@ class Ticket(models.Model):
         HIGH = 'HIGH', 'Alta'
         URGENT = 'URGENT', 'Urgente'
 
+    class Category(models.TextChoices):
+        SUPPORT = 'SUPPORT', 'Suporte técnico'
+        ACCESS = 'ACCESS', 'Acesso e contas'
+        SOFTWARE = 'SOFTWARE', 'Software'
+        HARDWARE = 'HARDWARE', 'Hardware'
+        NETWORK = 'NETWORK', 'Rede'
+        INFRA = 'INFRA', 'Infraestrutura'
+        ADMIN = 'ADMIN', 'Administrativo'
+        FINANCE = 'FINANCE', 'Financeiro'
+        MAINTENANCE = 'MAINTENANCE', 'Manutenção'
+        OTHER = 'OTHER', 'Outros'
+
     title = models.CharField(max_length=160)
     description = models.TextField()
     requester = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='requested_tickets')
@@ -28,6 +40,7 @@ class Ticket(models.Model):
     )
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.OPEN)
     priority = models.CharField(max_length=20, choices=Priority.choices, default=Priority.MEDIUM)
+    category = models.CharField(max_length=20, choices=Category.choices, default=Category.SUPPORT)
     sla_target_hours = models.PositiveIntegerField(default=24)
     first_response_at = models.DateTimeField(null=True, blank=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
@@ -43,6 +56,22 @@ class Ticket(models.Model):
     @property
     def is_open(self):
         return self.status in {self.Status.OPEN, self.Status.IN_PROGRESS}
+
+    @property
+    def category_badge_class(self):
+        badge_classes = {
+            self.Category.SUPPORT: 'bg-indigo-500/10 text-indigo-300',
+            self.Category.ACCESS: 'bg-violet-500/10 text-violet-300',
+            self.Category.SOFTWARE: 'bg-cyan-500/10 text-cyan-300',
+            self.Category.HARDWARE: 'bg-amber-500/10 text-amber-300',
+            self.Category.NETWORK: 'bg-blue-500/10 text-blue-300',
+            self.Category.INFRA: 'bg-emerald-500/10 text-emerald-300',
+            self.Category.ADMIN: 'bg-slate-500/10 text-slate-300',
+            self.Category.FINANCE: 'bg-rose-500/10 text-rose-300',
+            self.Category.MAINTENANCE: 'bg-lime-500/10 text-lime-300',
+            self.Category.OTHER: 'bg-zinc-500/10 text-zinc-300',
+        }
+        return badge_classes.get(self.category, 'bg-slate-500/10 text-slate-300')
 
     def change_status(self, new_status, changed_by):
         """

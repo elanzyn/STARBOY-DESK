@@ -4,6 +4,7 @@ from .models import User
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password
 from django.utils.translation import gettext_lazy as _
+from .validators import validate_full_name
 
 class UserCreationForm(forms.ModelForm):
     password1 = forms.CharField(label=_('Senha'), widget=forms.PasswordInput)
@@ -12,6 +13,15 @@ class UserCreationForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ('email', 'username', 'nome_completo', 'avatar', 'cargo')
+
+    def clean_nome_completo(self):
+        nome = self.cleaned_data.get('nome_completo', '')
+        return validate_full_name(nome)
+
+    def clean_password1(self):
+        password1 = self.cleaned_data.get('password1')
+        validate_password(password1)
+        return password1
 
     def clean_password2(self):
         password1 = self.cleaned_data.get('password1')
@@ -98,6 +108,15 @@ class RegisterForm(forms.ModelForm):
         if password1 and password2 and password1 != password2:
             raise ValidationError(_('As senhas não coincidem.'))
         return password2
+
+    def clean_password1(self):
+        password1 = self.cleaned_data.get('password1')
+        validate_password(password1)
+        return password1
+
+    def clean_nome_completo(self):
+        nome = self.cleaned_data.get('nome_completo', '')
+        return validate_full_name(nome)
 
     def clean_email(self):
         email = self.cleaned_data.get('email')

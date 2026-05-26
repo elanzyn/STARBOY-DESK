@@ -30,6 +30,11 @@ def ticket_list(request):
     if active_filter == 'awaiting_close':
         tickets = tickets.filter(status_logs__new_status='REQUESTER_CONFIRMED').distinct()
 
+    # category filter
+    active_category = request.GET.get('category')
+    if active_category in dict(Ticket.Category.choices).keys():
+        tickets = tickets.filter(category=active_category)
+
     # annotate whether requester has already confirmed resolution
     try:
         tickets = tickets.annotate(requester_confirmed=Exists(TicketStatusLog.objects.filter(ticket=OuterRef('pk'), new_status='REQUESTER_CONFIRMED')))
@@ -48,7 +53,17 @@ def ticket_list(request):
     except Exception:
         tickets_page = paginator.get_page(1)
 
-    return render(request, 'tickets/list.html', {'tickets': tickets_page, 'page_obj': tickets_page, 'paginator': paginator, 'page_number': tickets_page.number, 'page_title': 'Tickets', 'active_filter': active_filter, 'tickets_enable_requester_close': settings.TICKETS_ENABLE_REQUESTER_CLOSE})
+    return render(request, 'tickets/list.html', {
+        'tickets': tickets_page,
+        'page_obj': tickets_page,
+        'paginator': paginator,
+        'page_number': tickets_page.number,
+        'page_title': 'Tickets',
+        'active_filter': active_filter,
+        'active_category': active_category,
+        'categories': Ticket.Category.choices,
+        'tickets_enable_requester_close': settings.TICKETS_ENABLE_REQUESTER_CLOSE
+    })
 
 
 @login_required
@@ -68,7 +83,6 @@ def ticket_create(request):
                 widget=forms.Select(attrs={
                     'class': 'w-full rounded-2xl border border-white/6 px-4 py-3 text-slate-100',
                     'data-custom-select': 'true',
-                    'style': 'background-color: rgba(15,23,42,0.95) !important; color: #e6eef8 !important;'
                 })
             )
         if form.is_valid():
@@ -251,6 +265,8 @@ def ticket_assign_self(request, pk):
     import logging
     logger = logging.getLogger(__name__)
     ticket = get_object_or_404(Ticket, pk=pk)
+    if request.user.cargo != User.Cargo.SUPER_ADMIN:
+        return JsonResponse({'error': 'permission_denied', 'message': 'Apenas Super Admin pode se atribuir a um chamado.'}, status=403)
     # if already assigned to this user
     if ticket.assignee and ticket.assignee.pk == request.user.pk:
         return JsonResponse({'error': 'already_assigned', 'message': 'Você já está atribuído a este chamado.'}, status=400)

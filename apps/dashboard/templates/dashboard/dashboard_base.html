@@ -11,6 +11,7 @@
             const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             const dark = stored ? stored === 'dark' : prefersDark;
             document.documentElement.classList.toggle('dark', dark);
+            document.documentElement.classList.toggle('light', !dark);
         })();
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
