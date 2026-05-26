@@ -1,16 +1,26 @@
+from datetime import timedelta
+
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.forms import SetPasswordForm
+from django.contrib.auth.views import PasswordResetConfirmView
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.contrib import messages
-from .forms import LoginForm, RegisterForm, PasswordResetRequestForm, PasswordResetForm
+from django.views.decorators.http import require_POST
+from django.utils.encoding import force_str
+from .forms import LoginForm, RegisterForm, PasswordResetRequestForm
 from .models import User, PasswordResetRequest
-from .services import create_password_reset_request, apply_password_reset_token
+from .services import create_password_reset_request
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
+from django.urls import reverse_lazy
+from django.views.generic.edit import FormView
 
 
 def login_view(request):
     if request.user.is_authenticated:
+        if not request.user.has_active_plan():
+            return redirect('authentication:plan_selection')
         return redirect('dashboard:home')
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -31,6 +41,8 @@ def login_view(request):
                     if not remember:
                         request.session.set_expiry(0)
                     messages.success(request, _('Login realizado com sucesso!'))
+                    if not user.has_active_plan():
+                        return redirect('authentication:plan_selection')
                     return redirect('dashboard:home')
             else:
                 # user could be invalid credentials or inactive — check existence
@@ -48,16 +60,38 @@ def login_view(request):
 
 def register_view(request):
     if request.user.is_authenticated:
+        if not request.user.has_active_plan():
+            return redirect('authentication:plan_selection')
         return redirect('dashboard:home')
     if request.method == 'POST':
+        plan_id = request.POST.get('plan_id')
+        available_plans = {plan['id'] for plan in _plan_catalog()}
+        if plan_id not in available_plans:
+            messages.error(request, _('Selecione um plano válido.'))
+            return redirect('authentication:plan_selection')
         form = RegisterForm(request.POST)
+        selected_plan = _get_plan(plan_id)
         if form.is_valid():
             user = form.save()
-            messages.success(request, _('Conta criada com sucesso! Faça login.'))
-            return redirect('authentication:login')
+            expires_at = timezone.now() + timedelta(days=60)
+            user.plan_id = plan_id
+            user.plan_status = User.PlanStatus.TRIALING
+            user.plan_expires_at = expires_at
+            user.save(update_fields=['plan_id', 'plan_status', 'plan_expires_at'])
+            request.session['plan_confirm'] = {
+                'plan_label': force_str(dict(User.Plan.choices).get(plan_id, plan_id)),
+                'expires_at': expires_at.strftime('%d/%m/%Y'),
+                'email': user.email,
+            }
+            return redirect('authentication:plan_confirm')
     else:
+        plan_id = request.GET.get('plan')
+        selected_plan = _get_plan(plan_id)
+        if not selected_plan:
+            messages.info(request, _('Escolha um plano antes de criar a conta.'))
+            return redirect('authentication:plan_selection')
         form = RegisterForm()
-    return render(request, 'authentication/register.html', {'form': form})
+    return render(request, 'authentication/register.html', {'form': form, 'selected_plan': selected_plan})
 
 
 def logout_view(request):
@@ -82,23 +116,151 @@ def forgot_password_view(request):
     return render(request, 'authentication/forgot_password.html', {'form': form})
 
 
-def reset_password_view(request, token):
-    try:
-        reset_request = PasswordResetRequest.objects.select_related('user').get(token=token)
-    except PasswordResetRequest.DoesNotExist:
-        messages.error(request, _('Token inválido.'))
-        return redirect('authentication:login')
+def _plan_catalog():
+    return [
+        {
+            'id': User.Plan.MONTHLY,
+            'title': 'Plano Mensal',
+            'price': 'R$ 99,99',
+            'period': 'mês',
+            'badge': '2 meses grátis',
+            'billing': 'Após 2 meses grátis',
+        },
+        {
+            'id': User.Plan.SEMIANNUAL,
+            'title': 'Plano Semestral',
+            'price': 'R$ 84,99',
+            'period': 'mês',
+            'badge': '15% de desconto',
+            'billing': 'Cobrado semestralmente',
+        },
+        {
+            'id': User.Plan.ANNUAL,
+            'title': 'Plano Anual',
+            'price': 'R$ 74,99',
+            'period': 'mês',
+            'badge': '25% de desconto',
+            'billing': 'Cobrado anualmente',
+        },
+    ]
 
-    if request.method == 'POST':
-        form = PasswordResetForm(request.POST)
-        if form.is_valid():
-            try:
-                apply_password_reset_token(token, form.cleaned_data['password1'])
-                messages.success(request, _('Senha redefinida com sucesso.'))
-                return redirect('authentication:login')
-            except ValueError as exc:
-                messages.error(request, str(exc))
+
+def _get_plan(plan_id):
+    if not plan_id:
+        return None
+    for plan in _plan_catalog():
+        if plan['id'] == plan_id:
+            return plan
+    return None
+
+
+def plan_selection_view(request):
+    if request.user.is_authenticated and request.user.has_active_plan():
+        return redirect('dashboard:home')
+    return render(request, 'authentication/plan_selection.html', {
+        'plans': _plan_catalog(),
+        'page_title': 'Escolha seu plano',
+    })
+
+
+@login_required
+@require_POST
+def plan_activate_view(request):
+    if request.user.has_active_plan():
+        return redirect('dashboard:home')
+    plan_id = request.POST.get('plan_id')
+    available_plans = {plan['id'] for plan in _plan_catalog()}
+    if plan_id not in available_plans:
+        messages.error(request, _('Plano inválido.'))
+        return redirect('authentication:plan_selection')
+
+    # TODO: Integrar API de Pagamento Real aqui (cartão/PIX/assinatura)
+    request.user.plan_id = plan_id
+    request.user.plan_status = User.PlanStatus.TRIALING
+    request.user.plan_expires_at = timezone.now() + timedelta(days=60)
+    request.user.save(update_fields=['plan_id', 'plan_status', 'plan_expires_at'])
+    request.session['plan_confirm'] = {
+        'plan_label': force_str(dict(User.Plan.choices).get(plan_id, plan_id)),
+        'expires_at': request.user.plan_expires_at.strftime('%d/%m/%Y'),
+        'email': request.user.email,
+    }
+    return redirect('authentication:plan_confirm')
+
+
+def plan_confirm_view(request):
+    plan_label = ''
+    expires_at = ''
+    email = ''
+    if request.user.is_authenticated and request.user.has_active_plan():
+        plan_label = force_str(dict(User.Plan.choices).get(request.user.plan_id, ''))
+        expires_at = request.user.plan_expires_at.strftime('%d/%m/%Y') if request.user.plan_expires_at else ''
+        email = request.user.email
     else:
-        form = PasswordResetForm()
+        confirm_data = request.session.pop('plan_confirm', None)
+        if not confirm_data:
+            return redirect('authentication:plan_selection')
+        plan_label = confirm_data.get('plan_label', '')
+        expires_at = confirm_data.get('expires_at', '')
+        email = confirm_data.get('email', '')
+    return render(request, 'authentication/plan_confirm.html', {
+        'plan_label': plan_label,
+        'plan_expires_at': expires_at,
+        'plan_email': email,
+        'page_title': 'Plano ativado',
+    })
 
-    return render(request, 'authentication/reset_password.html', {'form': form, 'reset_request': reset_request})
+
+class TailwindSetPasswordForm(SetPasswordForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        base_classes = 'w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-slate-100 placeholder:text-slate-500 outline-none transition focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20'
+        self.fields['new_password1'].widget.attrs.update({
+            'class': base_classes,
+            'placeholder': 'Crie uma senha segura',
+            'id': 'id_password1',
+        })
+        self.fields['new_password2'].widget.attrs.update({
+            'class': base_classes,
+            'placeholder': 'Repita a senha',
+            'id': 'id_password2',
+        })
+
+
+class ResetPasswordConfirmTokenView(PasswordResetConfirmView):
+    template_name = 'authentication/reset_password.html'
+    form_class = TailwindSetPasswordForm
+    success_url = reverse_lazy('authentication:login')
+
+    def dispatch(self, request, *args, **kwargs):
+        token = kwargs.get('token')
+        try:
+            self.reset_request = PasswordResetRequest.objects.select_related('user').get(token=token)
+        except PasswordResetRequest.DoesNotExist:
+            messages.error(request, _('Token inválido.'))
+            return redirect('authentication:login')
+        if self.reset_request.status != PasswordResetRequest.Status.APROVADO:
+            messages.error(request, _('Solicitação não aprovada.'))
+            return redirect('authentication:login')
+        if self.reset_request.expira_em < timezone.now():
+            messages.error(request, _('Token expirado.'))
+            return redirect('authentication:login')
+        self.user = self.reset_request.user
+        self.validlink = True
+        return FormView.dispatch(self, request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.user
+        return kwargs
+
+    def form_valid(self, form):
+        form.save()
+        self.reset_request.status = PasswordResetRequest.Status.RECUSADO
+        self.reset_request.save(update_fields=['status'])
+        messages.success(self.request, _('Senha redefinida com sucesso.'))
+        return redirect(self.get_success_url())
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['reset_request'] = self.reset_request
+        return context

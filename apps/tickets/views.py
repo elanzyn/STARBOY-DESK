@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST
@@ -215,14 +216,16 @@ def ticket_change_status(request, pk):
     if new_status not in dict(Ticket.Status.choices).keys():
         return JsonResponse({'error': 'invalid_status', 'message': 'Status inválido.'}, status=400)
 
-    # permission logic: admins can change any status; assignee can set IN_PROGRESS or RESOLVED
+    # permission logic: superuser can change any status; others only if assigned and limited statuses
+    allowed_statuses_for_assignee = {Ticket.Status.OPEN, Ticket.Status.IN_PROGRESS, Ticket.Status.RESOLVED}
     allowed = False
-    if request.user.cargo in {User.Cargo.ADMIN, User.Cargo.SUPER_ADMIN}:
+    if request.user.is_superuser:
         allowed = True
-    elif ticket.assignee and ticket.assignee.pk == request.user.pk and new_status in {Ticket.Status.IN_PROGRESS, Ticket.Status.RESOLVED}:
+    elif ticket.assignee and ticket.assignee.pk == request.user.pk and new_status in allowed_statuses_for_assignee:
         allowed = True
 
     if not allowed:
+        messages.error(request, 'Você não tem permissão para alterar o status deste chamado.')
         return JsonResponse({'error': 'permission_denied', 'message': 'Você não tem permissão para alterar para esse status.'}, status=403)
 
     try:

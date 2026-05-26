@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Q
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.utils.dateformat import format as date_format
 from django.utils.translation import gettext_lazy as _
@@ -119,6 +119,8 @@ def _build_recent_activity(user):
 @login_required
 def home(request):
     user = request.user
+    if not user.has_active_plan():
+        return redirect('authentication:plan_selection')
     tickets_qs = Ticket.objects.all()
 
     # handle search query

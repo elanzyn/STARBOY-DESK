@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.db.models import Q
 
@@ -47,6 +48,18 @@ def toggle_user(request, user_id):
     user = get_object_or_404(User, id=user_id)
     user.is_active = not user.is_active
     user.save()
+    return redirect('superadmin:users')
+
+
+@superadmin_required
+@require_POST
+def promote_user_superadmin(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user.is_superuser = True
+    user.is_staff = True
+    user.cargo = User.Cargo.SUPER_ADMIN
+    user.save(update_fields=['is_superuser', 'is_staff', 'cargo'])
+    messages.success(request, f'{user.nome_completo} foi promovido a Superadmin.')
     return redirect('superadmin:users')
 
 

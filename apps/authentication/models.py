@@ -31,12 +31,33 @@ class User(AbstractBaseUser, PermissionsMixin):
         ADMIN = 'ADMIN', _('Admin')
         USER = 'USER', _('Usuário')
 
+    class Funcao(models.TextChoices):
+        TECNICO = 'TECNICO', _('Técnico')
+        RECEPCIONISTA = 'RECEPCIONISTA', _('Recepcionista')
+        GERENTE = 'GERENTE', _('Gerente')
+        SUPORTE = 'SUPORTE', _('Suporte')
+
+    class Plan(models.TextChoices):
+        MONTHLY = 'MONTHLY', _('Mensal')
+        SEMIANNUAL = 'SEMIANNUAL', _('Semestral')
+        ANNUAL = 'ANNUAL', _('Anual')
+
+    class PlanStatus(models.TextChoices):
+        NONE = 'NONE', _('Sem plano')
+        TRIALING = 'TRIALING', _('Período de testes')
+        ACTIVE = 'ACTIVE', _('Ativo')
+        EXPIRED = 'EXPIRED', _('Expirado')
+
     id = models.BigAutoField(primary_key=True)
     nome_completo = models.CharField(max_length=150)
     username = models.CharField(max_length=50, unique=True)
     email = models.EmailField(unique=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     cargo = models.CharField(max_length=20, choices=Cargo.choices, default=Cargo.USER)
+    funcao = models.CharField(max_length=20, choices=Funcao.choices, default=Funcao.SUPORTE)
+    plan_id = models.CharField(max_length=20, choices=Plan.choices, null=True, blank=True)
+    plan_status = models.CharField(max_length=20, choices=PlanStatus.choices, default=PlanStatus.NONE)
+    plan_expires_at = models.DateTimeField(null=True, blank=True)
     bio = models.TextField(blank=True, null=True)
     telefone = models.CharField(max_length=20, blank=True, null=True)
     is_active = models.BooleanField(default=True)
@@ -60,6 +81,15 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def last_name(self):
         return ' '.join(self.nome_completo.split(' ')[1:]) if self.nome_completo and len(self.nome_completo.split(' ')) > 1 else ''
+
+    def has_active_plan(self):
+        if self.is_superuser:
+            return True
+        if self.plan_status in {self.PlanStatus.TRIALING, self.PlanStatus.ACTIVE}:
+            if self.plan_expires_at and self.plan_expires_at < timezone.now():
+                return False
+            return True
+        return False
 
 class PasswordResetRequest(models.Model):
     class Status(models.TextChoices):
